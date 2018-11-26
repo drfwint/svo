@@ -1,0 +1,977 @@
+{% extends "global/Base.html" %}
+{% load i18n %}
+{% load staticfiles otree_tags %}
+
+
+
+{% block content %}
+    <!-- include the jQuery and jQuery UI scripts -->
+    <script src="https://code.jquery.com/jquery-2.1.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+    <!-- plus a jQuery UI theme, here I use "flick" -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.4/themes/flick/jquery-ui.css">
+
+
+    <script src="{% static 'svo3/highcharts/js/highcharts.js' %}"></script>
+
+    <script src="{% static 'svo3/sliderPips/jquery-ui-slider-pips.js' %}"></script>
+
+    <link href="{% static "svo3/sliderPips/jquery-ui-slider-pips.css" %}" rel="stylesheet">
+
+    <h2 class="p-2 mb-1 bg-info text-white text-center">
+        {% blocktrans trimmed %} Decision {% endblocktrans %}
+        <span id="taskNumber"></span>
+    </h2>
+
+    <div class="container-fluid">
+
+        <div class="row top-buffer">
+            <div class="col-2">
+
+                <div class="float-right labels">
+                    {% blocktrans trimmed %}You receive:{% endblocktrans %}
+                </div>
+                <div class="float-right labels" style="margin-top: 50px;">
+                    {% blocktrans trimmed %}Others receive:{% endblocktrans %}
+                </div>
+            </div>
+            <div class="col-10">
+                <br>
+                <div id="double-label-slider" width="100" style="width: 90%;" ></div>
+            </div>
+
+        </div>
+
+        <div class="row top-buffer">
+            <div class="col">
+                <div id="sliderBar" class="col-xs-4"></div>
+            </div>
+        </div>
+
+        <div class="row top-buffer row-centered">
+            <div class="col col-centered">
+                {% next_button %}
+            </div>
+        </div>
+    </div>
+
+    <div id="results" hidden>
+        <input type="number" name="you1" value="0" />
+        <input type="number" name="others1" value="0" />
+        <input type="number" name="you2" value="0" />
+        <input type="number" name="others2" value="0" />
+        <input type="number" name="you3" value="0" />
+        <input type="number" name="others3" value="0" />
+        <input type="number" name="you4" value="0" />
+        <input type="number" name="others4" value="0" />
+        <input type="number" name="you5" value="0" />
+        <input type="number" name="others5" value="0" />
+        <input type="number" name="you6" value="0" />
+        <input type="number" name="others6" value="0" />
+        <input type="number" name="you7" value="0" />
+        <input type="number" name="others7" value="0" />
+        <input type="number" name="you8" value="0" />
+        <input type="number" name="others8" value="0" />
+        <input type="number" name="you9" value="0" />
+        <input type="number" name="others9" value="0" />
+        <input type="number" name="you10" value="0" />
+        <input type="number" name="others10" value="0" />
+        <input type="number" name="you11" value="0" />
+        <input type="number" name="others11" value="0" />
+        <input type="number" name="you12" value="0" />
+        <input type="number" name="others12" value="0" />
+        <input type="number" name="you13" value="0" />
+        <input type="number" name="others13" value="0" />
+        <input type="number" name="you14" value="0" />
+        <input type="number" name="others14" value="0" />
+        <input type="number" name="you15" value="0" />
+        <input type="number" name="others15" value="0" />
+    </div>
+    {{ form.you1.errors }}
+    {{ form.you2.errors }}
+    {{ form.you3.errors }}
+    {{ form.you4.errors }}
+    {{ form.you5.errors }}
+    {{ form.you6.errors }}
+    {{ form.you7.errors }}
+    {{ form.you8.errors }}
+    {{ form.you9.errors }}
+    {{ form.you10.errors }}
+    {{ form.you11.errors }}
+    {{ form.you12.errors }}
+    {{ form.you13.errors }}
+    {{ form.you14.errors }}
+    {{ form.you15.errors }}
+
+    {{ form.others1.errors }}
+    {{ form.others2.errors }}
+    {{ form.others3.errors }}
+    {{ form.others4.errors }}
+    {{ form.others5.errors }}
+    {{ form.others6.errors }}
+    {{ form.others7.errors }}
+    {{ form.others8.errors }}
+    {{ form.others9.errors }}
+    {{ form.others10.errors }}
+    {{ form.others11.errors }}
+    {{ form.others12.errors }}
+    {{ form.others13.errors }}
+    {{ form.others14.errors }}
+    {{ form.others15.errors }}
+
+{% endblock %}
+
+{% block styles %}
+    <style>
+
+        .labels{
+            text-align:right;
+            font-size: 1.6vmin;
+        }
+
+        .row-centered {
+            text-align:center;
+        }
+        .col-centered {
+            display:inline-block;
+            float:none;
+            /* reset the text-align */
+        {#text-align:left;#}
+            /* inline-block space fix */
+            margin-right:-4px;
+            text-align: center;
+        }
+
+        .top-buffer{
+            margin-top: 20px;
+        }
+
+        /* Flips the range input direction from ltr to rtl */
+        .flip {
+            direction: rtl;
+        }
+
+        #double-label-slider.ui-slider {
+            margin-top: 24px;
+            height: 6px;
+            background: #dddddd;
+            border: none;
+            border-radius: 0; }
+
+        #double-label-slider.ui-slider .ui-slider-handle {
+            background: #0AA3BA;
+            border: none;
+            width: 15px;
+            height: 15px;
+            margin-left: -9px;
+            border-radius: 100%;
+            transition: box-shadow 0.2s ease; }
+
+        #double-label-slider.ui-slider .ui-slider-handle.ui-state-hover,
+        #double-label-slider.ui-slider .ui-slider-handle.ui-state-focus,
+        #double-label-slider.ui-slider .ui-slider-handle.ui-state-active {
+            box-shadow: 0 0 0 2px #25daa5; }
+
+        #double-label-slider.ui-slider .ui-slider-pip {
+            top: -3px;
+        }
+
+        #double-label-slider.ui-slider .ui-slider-pip .ui-slider-line {
+        {#background: white;#}
+        {#width: 12px;#}
+        {#height: 12px;#}
+        {#margin-left: -6px;#}
+        {#box-shadow: 0 0 0 2px #25daa5;#}
+            border-radius: 100%;
+            transition: all 0.4s ease;
+        }
+
+
+        #double-label-slider.ui-slider .ui-slider-pip .ui-slider-label,
+        #double-label-slider.ui-slider .ui-slider-pip .ui-slider-label i,
+        #double-label-slider.ui-slider .ui-slider-pip .ui-slider-label span {
+            width: 100px;
+            margin-left: -50px;
+            text-align: center; }
+
+
+        #double-label-slider.ui-slider .ui-slider-pip .ui-slider-label {
+            color: #888888; }
+
+        #double-label-slider.ui-slider .ui-slider-pip .ui-slider-label i {
+            font-style: normal;
+            font-size: 1.0em;
+            position: absolute;
+            top: -35px; }
+
+        @media screen and (max-width: 500px) {
+            #double-label-slider.ui-slider .ui-slider-pip .ui-slider-label i {
+                font-size: 0.8em; }
+        }
+
+
+        #double-label-slider.ui-slider .ui-slider-pip .ui-slider-label span {
+            opacity: 0.6;
+            font-size: 1.2em;
+            line-height: 1.3;
+            position: absolute;
+            top: 18px;
+            transition: opacity 0.3s ease; }
+
+        @media screen and (max-width: 500px) {
+            #double-label-slider.ui-slider .ui-slider-pip .ui-slider-label span {
+                font-size: 1.0em; }
+        }
+
+        #double-label-slider.ui-slider .ui-slider-pip:hover .ui-slider-label span,
+        #double-label-slider.ui-slider .ui-slider-pip:focus .ui-slider-label span,
+        #double-label-slider.ui-slider .ui-slider-pip.ui-slider-pip-selected .ui-slider-label span {
+            opacity: 1; }
+
+        #double-label-slider.ui-slider .ui-slider-pip.ui-slider-pip-selected .ui-slider-label {
+            color: black; }
+
+
+    </style>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        //##############################
+        // Global scope vars
+        //##############################
+
+        var back = false; // to indicate that the user pressed the back button
+        i=0; // The current item index corresponds to item 1 in paper
+        var others= false; // indicates that we are dealing with a range of the others values when true or you values when false
+        var rangeMin, rangeMax, currentX=0, currentY=0, numberOfUsedItems;
+        var currentItem;
+        var scale = parseFloat("{{scale}}".replace(/,/, ".")); // For some reason otree sends floating point numbers as 0,5 instead of 0.5
+        var precision = '{{precision}}';
+        var selectItems = '{{select_items}}';
+        var gameStarted = false;
+        var itemOrder = {{ item_order }};
+        var itemIndex;
+        var sliderInitType =  '{{ slider_init_type }}';
+
+        /* this defines the choices as listed on the sheets, the array looks like:
+        set 1 --> option 1 --> 'you get' lowest value
+                           --> 'you get' highest value
+                           --> 'you get' descending (1=yes; 0=no)
+                           --> 'other gets' lowest value
+                           --> 'other gets' highest value
+                           --> 'other gets' descending (1=yes; 0=no)
+                           --> item number according to original sheet (used to keep track when shuffling set[1] and set[2])
+                  option 2 ... etc.
+        */
+        var set = new Array(15);
+        var workingSet;
+        var sliderLabels = new Array(15);
+
+        set[0] = new Array(7);
+        set[0][1] = 85; // 'you get' lowest value
+        set[0][2] = 85; // 'you get' highest value
+        set[0][3] = 0;  // 'you get' descending (1=yes; 0=no)
+        set[0][4] = 15; // 'other gets' lowest value
+        set[0][5] = 85; // 'other gets' highest value
+        set[0][6] = 1;  // 'other gets' descending (1=yes; 0=no)
+        set[0][7] = 1;  // item number according to original sheet
+        sliderLabels[0]  = new Array(9);
+        sliderLabels[0] = [ {you:85, other:85}, {you:85, other:76}, {you:85, other:68},
+            {you:85, other:59}, {you:85, other:50}, {you:85, other:41},
+            {you:85, other:33}, {you:85, other:24}, {you:85, other:15}];
+
+        set[1] = new Array(7);
+        set[1][1] = 85;
+        set[1][2] = 100;
+        set[1][3] = 0;
+        set[1][4] = 15;
+        set[1][5] = 50;
+        set[1][6] = 0;
+        set[1][7] = 2;
+        sliderLabels[1]  = new Array(9);
+        sliderLabels[1] = [ {you:85, other:15}, {you:87, other:19}, {you:89, other:24},
+            {you:91, other:28}, {you:93, other:33}, {you:94, other:37},
+            {you:96, other:41}, {you:98, other:46}, {you:100, other:50}];
+
+
+        set[2] = new Array(7);
+        set[2][1] = 50;
+        set[2][2] = 85;
+        set[2][3] =  0;
+        set[2][4] =  85;
+        set[2][5] =  100;
+        set[2][6] =  1;
+        set[2][7] =  3;
+        sliderLabels[2]  = new Array(9);
+        sliderLabels[2] = [ {you:50, other:100}, {you:54, other:98}, {you:59, other:96},
+            {you:63, other:94}, {you:68, other:93}, {you:72, other:91},
+            {you:76, other:89}, {you:81, other:87}, {you:85, other:85}];
+
+
+        set[3] = new Array(7);
+        set[3][1] = 50;
+        set[3][2] = 85;
+        set[3][3] = 0;
+        set[3][4] = 15;
+        set[3][5] = 100;
+        set[3][6] = 1;
+        set[3][7] = 4;
+        sliderLabels[3] = new Array(9);
+        sliderLabels[3] = [ {you:50, other:100}, {you:54, other:89}, {you:59, other:79},
+            {you:63, other:68}, {you:68, other:58}, {you:72, other:47},
+            {you:76, other:36}, {you:81, other:26}, {you:85, other:15}];
+
+        set[4] = new Array(7);
+        set[4][1] = 50;
+        set[4][2] = 100;
+        set[4][3] = 1;
+        set[4][4] = 50;
+        set[4][5] = 100;
+        set[4][6] = 0;
+        set[4][7] = 5;
+        sliderLabels[4] = new Array(9);
+        sliderLabels[4] = [ {you:100, other:50}, {you:94, other:56}, {you:88, other:63},
+            {you:81, other:69}, {you:75, other:75}, {you:69, other:81},
+            {you:63, other:88}, {you:56, other:94}, {you:50, other:100}];
+
+
+        set[5] = new Array(7);
+        set[5][1] = 85;
+        set[5][2] = 100;
+        set[5][3] = 1;
+        set[5][4] = 50;
+        set[5][5] = 85;
+        set[5][6] = 0;
+        set[5][7] = 6;
+        sliderLabels[5] = new Array(9);
+        sliderLabels[5] = [ {you:100, other:50}, {you:98, other:54}, {you:96, other:59},
+            {you:94, other:63}, {you:93, other:68}, {you:91, other:72},
+            {you:89, other:76}, {you:87, other:81}, {you:85, other:85}];
+
+
+        set[6] = new Array(7);
+        set[6][1] = 70;
+        set[6][2] = 100;
+        set[6][3] = 1;
+        set[6][4] = 50;
+        set[6][5] = 100;
+        set[6][6] = 0;
+        set[6][7] = 7;
+        sliderLabels[6] = new Array(9);
+        sliderLabels[6] = [ {you:100, other:50}, {you:96, other:56}, {you:93, other:63},
+            {you:89, other:69}, {you:85, other:75}, {you:81, other:81},
+            {you:78, other:88}, {you:74, other:94}, {you:70, other:100}];
+
+
+        set[7] = new Array(7);
+        set[7][1] = 90;
+        set[7][2] = 100;
+        set[7][3] = 0;
+        set[7][4] = 90;
+        set[7][5] = 100;
+        set[7][6] = 1;
+        set[7][7] = 8;
+        sliderLabels[7] = new Array(9);
+        sliderLabels[7] = [ {you:90, other:100}, {you:91, other:99}, {you:93, other:98},
+            {you:94, other:96}, {you:95, other:95}, {you:96, other:94},
+            {you:98, other:93}, {you:99, other:91}, {you:100, other:90}];
+
+
+        set[8] = new Array(7);
+        set[8][1] = 50;
+        set[8][2] = 100;
+        set[8][3] = 1;
+        set[8][4] = 70;
+        set[8][5] = 100;
+        set[8][6] = 0;
+        set[8][7] = 9;
+        sliderLabels[8] = new Array(9);
+        sliderLabels[8] = [ {you:100, other:70}, {you:94, other:74}, {you:88, other:78},
+            {you:81, other:81}, {you:75, other:85}, {you:69, other:89},
+            {you:63, other:93}, {you:56, other:96}, {you:50, other:100}];
+
+
+        set[9] = new Array(7);
+        set[9][1] = 90;
+        set[9][2] = 100;
+        set[9][3] = 1;
+        set[9][4] = 70;
+        set[9][5] = 100;
+        set[9][6] = 0;
+        set[9][7] = 10;
+        sliderLabels[9] = new Array(9);
+        sliderLabels[9] = [ {you:100, other:70}, {you:99, other:74}, {you:98, other:78},
+            {you:96, other:81}, {you:95, other:85}, {you:94, other:89},
+            {you:93, other:93}, {you:91, other:96}, {you:90, other:100}];
+
+        set[10] = new Array(7);
+        set[10][1] = 70;
+        set[10][2] = 100;
+        set[10][3] = 0;
+        set[10][4] = 70;
+        set[10][5] = 100;
+        set[10][6] = 1;
+        set[10][7] = 11;
+        sliderLabels[10] = new Array(9);
+        sliderLabels[10] = [ {you:70, other:100}, {you:74, other:96}, {you:78, other:93},
+            {you:81, other:89}, {you:85, other:85}, {you:89, other:81},
+            {you:93, other:78}, {you:96, other:74}, {you:100, other:70}];
+
+        set[11] = new Array(7);
+        set[11][1] = 50;
+        set[11][2] = 100;
+        set[11][3] = 0;
+        set[11][4] = 90;
+        set[11][5] = 100;
+        set[11][6] = 1;
+        set[11][7] = 12;
+        sliderLabels[11] = new Array(9);
+        sliderLabels[11] = [ {you:50, other:100}, {you:56, other:99}, {you:63, other:98},
+            {you:69, other:96}, {you:75, other:95}, {you:81, other:94},
+            {you:88, other:93}, {you:94, other:91}, {you:100, other:90}];
+
+
+        set[12] = new Array(7);
+        set[12][1] = 50;
+        set[12][2] = 100;
+        set[12][3] = 0;
+        set[12][4] = 50;
+        set[12][5] = 100;
+        set[12][6] = 1;
+        set[12][7] = 13;
+        sliderLabels[12] = new Array(9);
+        sliderLabels[12] = [ {you:50, other:100}, {you:56, other:94}, {you:63, other:88},
+            {you:69, other:81}, {you:75, other:75}, {you:81, other:69},
+            {you:88, other:63}, {you:94, other:56}, {you:100, other:50}];
+
+
+        set[13] = new Array(7);
+        set[13][1] = 70;
+        set[13][2] = 100;
+        set[13][3] = 1;
+        set[13][4] = 90;
+        set[13][5] = 100;
+        set[13][6] = 0;
+        set[13][7] = 14;
+        sliderLabels[13] = new Array(9);
+        sliderLabels[13] = [ {you:100, other:90}, {you:96, other:91}, {you:93, other:93},
+            {you:89, other:94}, {you:85, other:95}, {you:81, other:96},
+            {you:78, other:98}, {you:74, other:99}, {you:70, other:100}];
+
+        set[14] = new Array(7);
+        set[14][1] = 90;
+        set[14][2] = 100;
+        set[14][3] = 0;
+        set[14][4] = 50;
+        set[14][5] = 100;
+        set[14][6] = 1;
+        set[14][7] = 15;
+        sliderLabels[14] = new Array(9);
+        sliderLabels[14] = [ {you:90, other:100}, {you:91, other:94}, {you:93, other:88},
+            {you:94, other:81}, {you:95, other:75}, {you:96, other:69},
+            {you:98, other:63}, {you:99, other:56}, {you:100, other:50}];
+
+
+        var results = new Array(15);
+        results[0] = new Array(3);
+        results[1] = new Array(3);
+        results[2] = new Array(3);
+        results[3] = new Array(3);
+        results[4] = new Array(3);
+        results[5] = new Array(3);
+        results[6] = new Array(3);
+        results[7] = new Array(3);
+        results[8] = new Array(3);
+        results[9] = new Array(3);
+        results[10] = new Array(3);
+        results[11] = new Array(3);
+        results[12] = new Array(3);
+        results[13] = new Array(3);
+        results[14] = new Array(3);
+
+        var currentItem; // represents the current item that the user sees
+        var chart = new Highcharts.Chart({
+            chart: {
+                renderTo:'sliderBar',
+                type: 'bar',
+                height:200
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                categories: [{% blocktrans trimmed %}'You'{% endblocktrans %},
+                    {% blocktrans trimmed %}'Other person'{% endblocktrans %}],
+                title: {
+                    text: null
+                }
+            },
+            yAxis: {
+                min: 0,
+                max: 100 * scale,
+                labels: {
+                    overflow: 'justify'
+                },
+                title:{
+                    text: null
+                }
+            },
+            tooltip: {
+                enabled: false
+            },
+            plotOptions: {
+                bar: {
+                    dataLabels: {
+                        enabled: true
+                    }
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            legend: {
+                enabled: false
+            },
+            series: [{
+                name: 'Results',
+                data: [100,0]
+            }]
+        });
+
+
+        //https://gist.github.com/antelle/7021916
+        String.prototype.format = function() {
+            var args = arguments;
+            var argNum = 0;
+            return this.replace(/\{(\w*)\}/gi, function(match) {
+                var curArgNum, prop = null;
+                if (match == "{}") {
+                    curArgNum = argNum;
+                    argNum++;
+                } else {
+                    curArgNum = match.substr(1, match.length - 2);
+                    var parsed = ~~curArgNum;
+                    if (parsed.toString() === curArgNum) {
+                        curArgNum = parsed;
+                    } else {
+                        prop = curArgNum;
+                        curArgNum = 0;
+                    }
+                }
+                var result = curArgNum >= args.length ? "" : prop ? args[curArgNum][prop] || "" : args[curArgNum];
+                return result;
+            });
+        };
+
+
+        // An algorithm to shuffle arrays
+        function fisherYates(myArray) {
+            var i = myArray.length, j, tempi, tempj;
+            if (i === 0) return false;
+            while (--i) {
+                j = Math.floor(Math.random() * (i + 1));
+                tempi = myArray[i];
+                tempj = myArray[j];
+                myArray[i] = tempj;
+                myArray[j] = tempi;
+            }
+        }
+
+        function setOrder(items){
+            var randomArray = new Array(items.length);
+            for(var i=0; i<items.length; i++){
+                randomArray[i] = new Array(7);
+                randomArray[i] = items[itemOrder[i]-1];
+            }
+            return randomArray;
+        }
+
+        // Gets y from x
+        function getY(x, number){
+            switch(number){
+                case 1:
+                    return -12;
+
+                case 2:
+                    return ((7/3)*x-(550/3));
+
+                case 3:
+                    return (-(3/7)*x+(850/7));
+
+                case 4:
+                    return (-(17/7)*x+(1550/7));
+
+                case 5:
+                    return (-x+150);
+
+                case 6:
+                    return (-(7/3)*x + (850/3));
+
+                case 7:
+                    return (-(5/3)*x + (650/3));
+
+                case 8:
+                    return (-x + 190);
+
+                case 9:
+                    return (-(3/5)*x + 130);
+
+                case 10:
+                    return (-3*x + 370);
+
+                case 11:
+                    return (-x + 170);
+
+                case 12:
+                    return (-(1/5)*x + 110);
+
+                case 13:
+                    return (-x + 150);
+
+                case 14:
+                    return (-(1/3)*x + 370/3);
+
+                case 15:
+                    return (-5*x + 550);
+            }
+        }
+
+
+        $( "#double-label-slider" ).on( "slide", function( event, ui ) {} );
+
+        $( "#double-label-slider" ).slider({
+            slide: function( event, ui ) {
+                // if dealing with other values
+                if(others){
+                    x = currentItem[1];
+                    y = parseFloat(ui.value);
+                    var minVal = currentItem[4];
+                    var maxVal = currentItem[5];
+
+                    y = maxVal-(y-minVal);
+
+                    if (precision == 'INTEGERS'){
+                        y = parseInt(y);
+                    } else if (precision == 'TWO_DIGITS_AFTER_POINT'){
+                        y = y.toFixed(2);
+                    }
+
+                    updateDynamic(x,y);
+                    // else dealing with you values
+                }else{
+                    x = parseFloat(ui.value);
+
+                    //decreasing values
+                    if(currentItem[3]==1){
+                        var minVal = currentItem[1];
+                        var maxVal = currentItem[2];
+                        x = maxVal-(x-minVal);
+                    }
+
+                    y = getY(x, currentItem[7]);
+                    if (precision == 'INTEGERS'){
+                        x = parseInt(x);
+                        y = parseInt(Math.ceil(y));
+                    } else if (precision == 'TWO_DIGITS_AFTER_POINT'){
+                        x = parseFloat(x.toFixed(2)); // two digits after point
+                        y = parseFloat(y.toFixed(2));
+                    }
+                    updateDynamic(x,y);
+                }
+            }
+
+        });
+
+
+
+        function updateDynamic(you,others){
+            currentX = you;
+            currentY = others;
+            chart.series[0].data[0].update(y=you * scale);
+            chart.series[0].data[1].update(y=others * scale);
+        }
+
+        function updateSlider(rangeMin, rangeMax, itemIndex, initValue){
+
+            var labels = new Array();
+
+            if(others){
+                var labelIndex = 0;
+                initValue = rangeMax-(initValue-rangeMin);
+
+                for(var j=rangeMax; j>=rangeMin; j--){
+                    var youLabel = sliderLabels[itemIndex][labelIndex]['you'];
+                    var otherLabel = sliderLabels[itemIndex][labelIndex]['other'];
+
+                    if (j == otherLabel) {
+                        if(currentItem[7] !=1 ){
+                            otherLabel = parseInt(Math.ceil(getY(youLabel, currentItem[7])));
+                        }
+                        console.log(otherLabel+" "+ youLabel);
+                        labels.push("<i>{0}</i><span>{1}</span>".format(youLabel, otherLabel));
+                        labelIndex++;
+                    }
+                    else{
+                        labels.push("");
+                    }
+                }
+            }
+            else{
+                //if labels are decreasing
+                if( currentItem[3] == 1 ){
+                    var labelIndex = 0;
+                    initValue = rangeMax-(initValue-rangeMin);
+
+                    for(var j=rangeMax; j>=rangeMin; j--){
+
+                        var youLabel = sliderLabels[itemIndex][labelIndex]['you'];
+                        var otherLabel = sliderLabels[itemIndex][labelIndex]['other'];
+
+                        if (j == youLabel) {
+                            var otherLabel = parseInt(Math.ceil(getY(youLabel, currentItem[7])));
+                            labels.push("<i>{0}</i><span>{1}</span>".format(youLabel, otherLabel));
+                            labelIndex++;
+                        }
+                        else{
+                            labels.push("");
+                        }
+                    }
+                }
+                // if labels are increasing
+                else{
+                    var labelIndex = 0;
+
+                    for(var j=rangeMin; j<=rangeMax; j++){
+
+                        var youLabel = sliderLabels[itemIndex][labelIndex]['you'];
+                        var otherLabel = sliderLabels[itemIndex][labelIndex]['other'];
+
+                        if (j == youLabel) {
+                            var otherLabel = parseInt(Math.ceil(getY(youLabel, currentItem[7])));
+                            labels.push("<i>{0}</i><span>{1}</span>".format(youLabel, otherLabel));
+                            labelIndex++;
+                        }
+                        else{
+                            labels.push("");
+                        }
+                    }
+                }
+            }
+
+            $("#double-label-slider")
+                .slider({
+                    max: rangeMax,
+                    min: rangeMin,
+                    value: initValue,
+                    animate: 1000
+                })
+                .slider("pips", {
+                    rest: "label",
+                    labels: labels
+                });
+            {% comment %}
+                        .slider("float", {
+                            step:1
+                        });
+            {% endcomment %}
+
+        }
+
+
+        function updateMinMax(youMin, youMax, othersMin, othersMax) {
+
+            $("#youMinVal").html(youMin * scale);
+            $("#youMaxVal").html(youMax * scale);
+
+            $("#othersMinVal").html(othersMin * scale);
+            $("#othersMaxVal").html(othersMax * scale);
+        }
+
+
+        // Helper function to get a random value between min and max
+        function randomIntFromInterval(min,max)
+        {
+            return Math.floor(Math.random()*(max-min+1)+min);
+        }
+
+        function init(){
+            var labelNum = sliderLabels[i].length;
+
+            if (i <= numberOfUsedItems) {
+                $("#taskNumber").text(i+1);
+
+                currentItem = workingSet[i].slice(); // returns the current item array as a new array
+
+                itemIndex = currentItem[7]-1;
+
+                switch (sliderInitType){
+                    case 'LEFT':
+                        var youInit = sliderLabels[itemIndex][0]['you'];
+                        var otherInit = sliderLabels[itemIndex][0]['other'];
+                        break;
+                    case 'RIGHT':
+                        var youInit = sliderLabels[itemIndex][labelNum-1]['you'];
+                        var otherInit = sliderLabels[itemIndex][labelNum-1]['other'];
+                        break;
+                    case 'RAND':
+                        if( currentItem[7] == 1 ){
+                            var youInit = sliderLabels[itemIndex][0]['you'];
+                            var otherInit = randomIntFromInterval(currentItem[4], currentItem[5]);
+                        }
+                        else{
+                            var youInit = randomIntFromInterval(currentItem[1], currentItem[2]);
+                            var otherInit = parseInt(Math.ceil(getY(youInit, currentItem[7]))) ;
+                        }
+                        break;
+                    case 'AVG':
+                        youInit = parseInt((Math.abs(currentItem[1] - currentItem[2]))/2)+currentItem[1];
+                        if (youInit == 0){
+                            youInit = currentItem[1];
+                        }
+                        otherInit =  parseInt((Math.abs(currentItem[4] - currentItem[5]))/2)+currentItem[4];
+                        break;
+                    default:
+                        console.log("Slider initialization problem "+ sliderInitType);
+                }
+                chart.series[0].data[0].update(youInit * scale);
+                chart.series[0].data[1].update(otherInit * scale);
+
+                if( currentItem[7] == 1 ){
+                    others = true;
+                    rangeMin = currentItem[4];
+                    rangeMax = currentItem[5];
+                    currentX = youInit;
+                    currentY = otherInit;
+                    // rangeMin, rangeMax, youMin, youMax, othersMin, othersMaxVal
+                    updateMinMax(currentItem[1], currentItem[2], currentItem[5], currentItem[4]);
+                    updateSlider(rangeMin, rangeMax, itemIndex, otherInit);
+                }
+                else{
+                    others = false;
+                    rangeMin = currentItem[1];
+                    rangeMax = currentItem[2];
+                    currentX = youInit;
+                    currentY = otherInit;
+                    // rangeMin, rangeMax, youMin, youMax, othersMin, othersMaxVal
+                    updateMinMax(currentItem[1], currentItem[2], currentItem[5], currentItem[4]);
+                    updateSlider(rangeMin, rangeMax, itemIndex, youInit);
+                }
+            }else{
+                console.log("i is more than numberOfUsedItems"+i);
+                return;
+            }
+        }
+
+
+        $('form').on('submit', function(e){
+            e.preventDefault();
+            console.log("CurrentX " + currentX);
+            console.log("CurrentY " + currentY);
+            results[i][0] = currentItem[7];
+            results[i][1] = currentX;
+            results[i][2] = currentY;
+            i++;
+            setCookie("results", JSON.stringify(results), 20);
+            setCookie("i", i, 20);
+
+            if (i <= numberOfUsedItems){
+                init();
+            }else{
+                inputsYou = $("#results input[name*='you']");
+                for (j =0; j<= numberOfUsedItems; j++ ){
+                    inputsYou[results[j][0]-1].value = results[j][1]; // -1 because 14 instead of 15
+                }
+                inputsOthers = $("#results input[name*='others']");
+                for (j =0; j<= numberOfUsedItems; j++ ){
+                    inputsOthers[results[j][0]-1].value = results[j][2];
+                }
+                // Delete the Cookies
+                setCookie("results", "", -20);
+                setCookie("i", "", -20);
+                setCookie("workingSet", "", -20);
+                setCookie("numberOfUsedItems", "", -20);
+                this.submit();
+            }
+            console.log("submit");
+        });
+
+
+        $(function(){
+            console.log("Initialize");
+            if (checkCookie("results") && checkCookie("workingSet") && checkCookie("i") && checkCookie("numberOfUsedItems")){
+                console.log("Restoring!");
+                results = JSON.parse(getCookie("results"));
+                workingSet = JSON.parse(getCookie("workingSet"));
+                i = parseInt(getCookie("i"));
+                numberOfUsedItems = parseInt(getCookie("numberOfUsedItems"));
+                gameStarted = true;
+
+            }else {
+                i=0;
+            }
+            if (selectItems == 'PRIMARY' && !gameStarted){
+                numberOfUsedItems = 5;
+                workingSet = set.slice(0,6); // Get only the first six items
+            }
+            else if (selectItems == 'FULL' && !gameStarted){
+                numberOfUsedItems = 14;
+                workingSet = set.slice();   // Get the complete set of items primary and secondary
+            }
+
+            if (!gameStarted){
+                workingSet = setOrder(workingSet);
+            }
+
+            // if there is no workingSet cookie set it
+            if(!checkCookie("workingSet")){
+                setCookie("workingSet", JSON.stringify(workingSet), 20);
+                setCookie("numberOfUsedItems", numberOfUsedItems, 20);
+            }
+            // Init for the first time or continue after page reload.
+            init();
+        });
+
+        // Cookies management code
+        function setCookie(cname, cvalue, exdays) {
+            var d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            var expires = "expires="+d.toUTCString();
+            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        }
+
+
+        // returns the value of a cookie
+        function getCookie(cname) {
+            var name = cname + "=";
+            var ca = document.cookie.split(';');
+            for(var f = 0; f < ca.length; f++) {
+                var c = ca[f];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
+
+        // checks whether a cookie exist or not
+        function checkCookie(cname) {
+            var cook = getCookie(cname);
+            if (cook != "") {
+                return true;
+            }else{
+                return false;
+            }
+        }
+
+    </script>
+
+
+
+{% endblock %}

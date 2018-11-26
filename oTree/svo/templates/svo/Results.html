@@ -1,0 +1,31 @@
+{% extends "global/Base.html" %}
+{% load i18n %}
+{% load staticfiles otree_tags %}
+
+{% block title %}
+    {% blocktrans trimmed %}Social Value Orientation results{% endblocktrans %}
+{% endblock %}
+
+{% block content %}
+    <p>
+    {% blocktrans trimmed %}You answered the{% endblocktrans %} {{subsession.select_items}} Primary or Primarz and Secondary {% blocktrans trimmed %}questions{% endblocktrans %}.
+    If random dictator
+        You were randomly selected as Sender Receiver
+        Slider X was selected for pazment
+        {% blocktrans trimmed %}Your profit is therefore{% endblocktrans %} {{ player.payoff }}.
+    If Ring Matching
+        Slider X was selected for pazment
+        As a Receiver, zou received X
+        As a Sender, zou kept Z
+        {% blocktrans trimmed %}Your profit is therefore{% endblocktrans %} {{ player.payoff }}.
+
+    <br> {% blocktrans trimmed %}Your social value orientation angle is{% endblocktrans %}  {{player.svo_angle}}. 
+    <br> {% blocktrans trimmed %}Therefore your svo type is{% endblocktrans %} {{player.svo_type}}.
+    If Primary and Secondary
+        <br> {% blocktrans trimmed %}Your inequalitz aversion score is {% endblocktrans %} {{player.ineq}}.
+
+    </p>
+    {% next_button %}
+{% endblock %}
+
+

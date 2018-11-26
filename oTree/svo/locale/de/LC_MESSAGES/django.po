@@ -1,0 +1,62 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-07-20 16:19+0200\n"
+"PO-Revision-Date: 2018-07-20 16:23+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 1.5.4\n"
+
+#: templates/svo/Play.html:25
+msgid "Decision"
+msgstr "Entscheidung"
+
+#: templates/svo/Play.html:35
+msgid "You receive:"
+msgstr "Sie erhalten:"
+
+#: templates/svo/Play.html:38
+msgid "Others receive:"
+msgstr "Andere erhalten:"
+
+#: templates/svo/Play.html:507
+msgid "'You'"
+msgstr "'Sie erhalten'"
+
+#: templates/svo/Play.html:508
+msgid "'Other person'"
+msgstr "'Andere erhalten'"
+
+#: templates/svo/Results.html:6
+msgid "Social Value orientation results"
+msgstr ""
+
+#: templates/svo/Results.html:11
+msgid "You answered the"
+msgstr ""
+
+#: templates/svo/Results.html:11
+msgid "questions"
+msgstr ""
+
+#: templates/svo/Results.html:12
+msgid "Your profit is therefore"
+msgstr ""
+
+#: templates/svo/Results.html:13
+msgid "Your social value orientation angle is"
+msgstr ""
+
+#: templates/svo/Results.html:14
+msgid "Therefore your svo type is"
+msgstr ""
