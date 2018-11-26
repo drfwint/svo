@@ -1,6 +1,6 @@
 # Social Value Orientation Task
 
-This is the oTree implementation of the Social Value Orientation Slider Task by Murphy et al. (2014).
+This is the z-Tree implementation of the Social Value Orientation Slider Task by Murphy et al. (2014).
 
 
 
