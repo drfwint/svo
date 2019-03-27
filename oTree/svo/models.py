@@ -2,9 +2,14 @@ from otree.api import (
     models, widgets, BaseConstants, BaseSubsession, BaseGroup, BasePlayer,
     Currency as c, currency_range
 )
+from django.utils import translation
+from django import http
+from django.conf import settings
+
 import random
-from math import atan, degrees
-from settings import LANGUAGE_CODE
+from math import atan, degrees, sqrt
+from .utils import compute_line, intersection_point, distance, max_tuple
+
 author = 'Abdul Majeed Alkattan, Emad Bahrami'
 
 doc = """
@@ -14,46 +19,117 @@ doc = """
 # Config for the game
 class Constants(BaseConstants):
     name_in_url = 'svo'
-    players_per_group = 2         # The number should be a multiple of 2 in case the matching is RANDOM_DICTATOR.
+    players_per_group = None         # The number should be a multiple of 2 in case the matching is RANDOM_DICTATOR.
     num_rounds = 1
-    language = LANGUAGE_CODE      # Sets the language in settings.py
-    select_items = 'FULL'         # Determins whether we use the first six items to calculate the payoff (PRIMARY) or the 15 items (FULL)
-    items_in_random_order = False  # items are presented in random order or according to Murphy
-    scale = 1                     # A scaling factor to display the values to the user
-    precision = 'INTEGERS'        # TWO_DIGITS_AFTER_POINT or INTEGERS
-    # matching = 'RANDOM_DICTATOR'             # Possible values are either 'RING' or 'RANDOM_DICTATOR'
-    matching = 'RING'             # Possible values are either 'RING' or 'RANDOM_DICTATOR'
 
-    slider_init_type = 'LEFT'      # 'LEFT' to initialize the slider with the left most value
-                                   # 'RIGHT' to initialize with the right most value
-                                   # 'RAND' random value in the range
-                                   # 'AVG' to initialize the items using average between min and max
+
+    slider_end_points = {
+        'item7':  [(100, 50), (70, 100)],
+        'item8':  [(90, 100), (100, 90)],
+        'item9':  [(100, 70), (50, 100)],
+        'item10': [(100, 70), (90, 100)],
+        'item11': [(70, 100), (100, 70)],
+        'item12': [(50, 100), (100, 90)],
+        'item13': [(50, 100), (100, 50)],
+        'item14': [(100, 90), (70, 100)],
+        'item15': [(90, 100), (100, 50)]}
+
+    # representing line y=x using Ax+By=C by A, B, C
+    identity_line = (1, -1, 0)
+
+
+    line = compute_line
+    id_line = identity_line
+
+    # intersection point of the slider line and y=x line
+    mid_points = {}
+
+    # store the joint max of each item
+    joint_max = {}
+
+    # points that always maximize other
+    altruist_points = {}
+
+    # points that always maximize self
+    individualist_points = {}
+
+    secondary_items = []
+
+    for item, points in slider_end_points.items():
+        mid_points[item] = intersection_point(id_line, line(*points))
+
+        joint_max[item] = max_tuple(*points, sum)
+
+        altruist_points[item] = max_tuple(*points, lambda x: x[1])
+
+        individualist_points[item] = max_tuple(*points, lambda x: x[0])
+
+        secondary_items.append(item)
+
 
 # Defining what configs to be saved
 class Subsession(BaseSubsession):
     players_per_group = models.IntegerField()
-    language = models.CharField(choices=['EN', 'DE', 'IT'])   # English, Deutsch, Italian
+    language = models.CharField(choices=['EN', 'DE', 'IT', 'FR'])   # English, Deutsch, Italian
     select_items = models.CharField(choices=['PRIMARY', 'FULL'])
     items_in_random_order = models.BooleanField()
-    scale = models.DecimalField(max_digits=5, decimal_places=2)
+    scale = models.FloatField()
     precision = models.CharField(choices=['INTEGERS', 'TWO_DIGITS_AFTER_POINT'])
     matching = models.CharField(choices=['RING', 'RANDOM_DICTATOR'])
     random_payoff = models.CharField(choices=['RAND', 'SUM'])
-    slider_init_type = models.CharField(choices=['LEFT', 'RIGHT', 'RAND', 'AVG'])
+    slider_init = models.CharField(choices=['LEFT', 'RIGHT', 'RAND', 'AVG'])
+
+
+    def creating_session(self):
+        group_matrix = []
+        players = self.get_players()
+        num_players = len(self.get_players())
+        if self.session.config['matching'] == 'RING':
+            ppg = num_players
+            if ppg<2:
+                raise ValueError("Number of player for RING matching should be at least 2")
+
+        elif self.session.config['matching'] == 'RANDOM_DICTATOR':
+            ppg = 2
+
+        if num_players%ppg != 0:
+            raise ValueError("Number of player must be multiple of {}".format(ppg))
+
+
+        for i in range(0, len(players), ppg):
+            group_matrix.append(players[i:i + ppg])
+        self.set_group_matrix(group_matrix)
 
 
     # Runs at initialization time and saves the configs in the database
     def before_session_starts(self):
         self.players_per_group = Constants.players_per_group
-        self.language = Constants.language
-        self.select_items = Constants.select_items
-        self.items_in_random_order = Constants.items_in_random_order
-        self.scale = Constants.scale
-        self.precision = Constants.precision
-        self.matching = Constants.matching
-        self.slider_init_type = Constants.slider_init_type
+        self.language = self.session.config['language'].lower()
+        # self.select_items = Constants.select_items
+        self.select_items = self.session.config['select_items'].upper()
 
-        if Constants.select_items == 'FULL':
+        # self.items_in_random_order = Constants.items_in_random_order
+        self.items_in_random_order = self.session.config['items_in_random_order']
+
+        self.scale = float(self.session.config['scale'])
+
+        self.precision = self.session.config['precision'].upper()
+        # self.matching = Constants.matching
+        self.matching = self.session.config['matching'].upper()
+        self.slider_init = self.session.config['slider_init'].upper()
+        self.random_payoff = self.session.config['random_payoff'].upper()
+
+        if self.language in ('de', 'en', 'fr', 'it'):
+            user_language = self.language
+        else:
+            raise ValueError("{} is not a valid language code.")
+
+
+        self.session.vars['django_language'] = user_language
+
+        translation.activate(user_language)
+
+        if self.select_items == 'FULL':
             item_order = list(range(1, 16))
         else:
             item_order = list(range(1, 7))
@@ -65,16 +141,17 @@ class Subsession(BaseSubsession):
     # it can be random for each player or the fixed order according to the paper
     def set_item_orders(self, item_order):
         players = self.get_players()
-        if Constants.items_in_random_order:
-            random.shuffle(item_order)
+
         for player in players:
+            if self.items_in_random_order:
+                random.shuffle(item_order)
             player.random_order1 = item_order[0]
             player.random_order2 = item_order[1]
             player.random_order3 = item_order[2]
             player.random_order4 = item_order[3]
             player.random_order5 = item_order[4]
             player.random_order6 = item_order[5]
-            if Constants.select_items == 'FULL':
+            if self.select_items == 'FULL':
                 player.random_order7 = item_order[6]
                 player.random_order8 = item_order[7]
                 player.random_order9 = item_order[8]
@@ -86,7 +163,6 @@ class Subsession(BaseSubsession):
                 player.random_order15 = item_order[14]
 
 
-
 class Group(BaseGroup):
 
     # A function to calculate the SVO angle
@@ -94,25 +170,24 @@ class Group(BaseGroup):
         mean_to_self = 0
         mean_to_others = 0
 
-        mean_to_self+= player.you1
-        mean_to_self+= player.you2
-        mean_to_self+= player.you3
-        mean_to_self+= player.you4
-        mean_to_self+= player.you5
-        mean_to_self+= player.you6
+        mean_to_self+= player.input_self_1
+        mean_to_self+= player.input_self_2
+        mean_to_self+= player.input_self_3
+        mean_to_self+= player.input_self_4
+        mean_to_self+= player.input_self_5
+        mean_to_self+= player.input_self_6
         mean_to_self = mean_to_self / 6
 
-        mean_to_others+= player.others1
-        mean_to_others+= player.others2
-        mean_to_others+= player.others3
-        mean_to_others+= player.others4
-        mean_to_others+= player.others5
-        mean_to_others+= player.others6
+        mean_to_others+= player.input_other_1
+        mean_to_others+= player.input_other_2
+        mean_to_others+= player.input_other_3
+        mean_to_others+= player.input_other_4
+        mean_to_others+= player.input_other_5
+        mean_to_others+= player.input_other_6
         mean_to_others = mean_to_others / 6
 
-        
-        return degrees(atan((mean_to_others-50) / (mean_to_self - 50)))
-            
+
+        return degrees(atan((float(mean_to_others) - self.subsession.scale*50) / (float(mean_to_self) - self.subsession.scale*50)))
 
     # A function to calculate the SVO type
     def svo_type(self, angle):
@@ -127,687 +202,354 @@ class Group(BaseGroup):
     
     # Setting the payoff at random item in case of Ring 
     def ring_payoff(self, sender_player, receiver_player):
-        # Case we will consider all the items
-        if Constants.select_items == 'FULL':
-            rand = random.randint(0, 14)
 
-            sender_player.paid_slider = rand+1
-            receiver_player.slider_as_receiver = rand+1
+        if self.subsession.random_payoff == 'SUM':
+            # sum of the amount received from the sender player (slider 1 to 6)
+            receiver_player.payoff += sender_player.input_other_1 + sender_player.input_other_2 + \
+                                      sender_player.input_other_3 + sender_player.input_other_4 + \
+                                      sender_player.input_other_5 + sender_player.input_other_6
 
-            # TODO initialize the players payoff ?
-            if rand == 0:
-                sender_player.kept_of_sender = sender_player.you1
-                receiver_player.received_from_sender = sender_player.others1
+            receiver_player.received_from_sender = sender_player.input_other_1 + sender_player.input_other_2 + \
+                                                   sender_player.input_other_3 + sender_player.input_other_4 + \
+                                                   sender_player.input_other_5 + sender_player.input_other_6
+            receiver_player.received_from_sender = float(receiver_player.received_from_sender)
 
-                receiver_player.payoff += sender_player.others1
-                sender_player.payoff += sender_player.you1
-            elif rand == 1:
-                sender_player.kept_of_sender = sender_player.you2
-                receiver_player.received_from_sender = sender_player.others2
+            sender_player.payoff += sender_player.input_self_1 + sender_player.input_self_2 + \
+                                    sender_player.input_self_3 + sender_player.input_self_4 + \
+                                    sender_player.input_self_5 + sender_player.input_self_6
 
-                receiver_player.payoff += sender_player.others2
-                sender_player.payoff += sender_player.you2
-            elif rand == 2:
-                sender_player.kept_of_sender = sender_player.you3
-                receiver_player.received_from_sender = sender_player.others3
+            sender_player.kept_of_sender = sender_player.input_self_1 + sender_player.input_self_2 + \
+                                           sender_player.input_self_3 + sender_player.input_self_4 + \
+                                           sender_player.input_self_5 + sender_player.input_self_6
+            sender_player.kept_of_sender = float(sender_player.kept_of_sender)
 
-                receiver_player.payoff += sender_player.others3
-                sender_player.payoff += sender_player.you3
-            elif rand == 3:
-                sender_player.kept_of_sender = sender_player.you4
-                receiver_player.received_from_sender = sender_player.others4
-
-                receiver_player.payoff += sender_player.others4
-                sender_player.payoff += sender_player.you4
-            elif rand == 4:
-                sender_player.kept_of_sender = sender_player.you5
-                receiver_player.received_from_sender = sender_player.others5
-
-                receiver_player.payoff += sender_player.others5
-                sender_player.payoff += sender_player.you5
-            elif rand == 5:
-                sender_player.kept_of_sender = sender_player.you6
-                receiver_player.received_from_sender = sender_player.others6
-
-                receiver_player.payoff += sender_player.others6
-                sender_player.payoff += sender_player.you6
-            elif rand == 6:
-                sender_player.kept_of_sender = sender_player.you7
-                receiver_player.received_from_sender = sender_player.others7
-
-                receiver_player.payoff += sender_player.others7
-                sender_player.payoff += sender_player.you7
-            elif rand == 7:
-                sender_player.kept_of_sender = sender_player.you8
-                receiver_player.received_from_sender = sender_player.others8
-
-                receiver_player.payoff += sender_player.others8
-                sender_player.payoff += sender_player.you8
-            elif rand == 8:
-                sender_player.kept_of_sender = sender_player.you9
-                receiver_player.received_from_sender = sender_player.others9
-
-                receiver_player.payoff += sender_player.others9
-                sender_player.payoff += sender_player.you9
-            elif rand == 9:
-                sender_player.kept_of_sender = sender_player.you10
-                receiver_player.received_from_sender = sender_player.others10
-
-                receiver_player.payoff += sender_player.others10
-                sender_player.payoff += sender_player.you10
-            elif rand == 10:
-                sender_player.kept_of_sender = sender_player.you11
-                receiver_player.received_from_sender = sender_player.others11
-
-                receiver_player.payoff += sender_player.others11
-                sender_player.payoff += sender_player.you11
-            elif rand == 11:
-                sender_player.kept_of_sender = sender_player.you12
-                receiver_player.received_from_sender = sender_player.others12
-
-                receiver_player.payoff += sender_player.others12
-                sender_player.payoff += sender_player.you12
-            elif rand == 12:
-                sender_player.kept_of_sender = sender_player.you13
-                receiver_player.received_from_sender = sender_player.others13
-
-                receiver_player.payoff += sender_player.others13
-                sender_player.payoff += sender_player.you13
-            elif rand == 13:
-                sender_player.kept_of_sender = sender_player.you14
-                receiver_player.received_from_sender = sender_player.others14
-
-                receiver_player.payoff += sender_player.others14
-                sender_player.payoff += sender_player.you14
-            elif rand == 14:
-                sender_player.kept_of_sender = sender_player.you15
-                receiver_player.received_from_sender = sender_player.others15
-
-                receiver_player.payoff += sender_player.others15
-                sender_player.payoff += sender_player.you15
-
-            receiver_player.payoff *= Constants.scale # scaling the payoff
 
         # Only the first six items
-        elif Constants.select_items == 'PRIMARY':
+        if self.subsession.select_items == 'PRIMARY':
 
-            # random int from the set {0, 1, 2, 3, 4, 5}
-            rand = random.randint(0, 5)
+            if self.subsession.random_payoff == 'RAND':
 
-            sender_player.paid_slider = rand+1
-            receiver_player.slider_as_receiver = rand+1
+                # random int from the set {0, 1, 2, 3, 4, 5}
+                rand = random.randint(0, 5)
+                sender_player.paid_slider = rand + 1
+                receiver_player.slider_as_receiver = rand + 1
 
-            if rand == 0:
-                sender_player.kept_of_sender = sender_player.you1
-                receiver_player.received_from_sender = sender_player.others1
+                if rand == 0:
+                    sender_player.kept_of_sender = sender_player.input_self_1
+                    receiver_player.received_from_sender = sender_player.input_other_1
 
-                receiver_player.payoff += sender_player.others1
-                sender_player.payoff += sender_player.you1
-            elif rand == 1:
-                sender_player.kept_of_sender = sender_player.you2
-                receiver_player.received_from_sender = sender_player.others2
+                    receiver_player.payoff += sender_player.input_other_1
+                    sender_player.payoff += sender_player.input_self_1
+                elif rand == 1:
+                    sender_player.kept_of_sender = sender_player.input_self_2
+                    receiver_player.received_from_sender = sender_player.input_other_2
 
-                receiver_player.payoff += sender_player.others2
-                sender_player.payoff += sender_player.you2
-            elif rand == 2:
-                sender_player.kept_of_sender = sender_player.you3
-                receiver_player.received_from_sender = sender_player.others3
+                    receiver_player.payoff += sender_player.input_other_2
+                    sender_player.payoff += sender_player.input_self_2
+                elif rand == 2:
+                    sender_player.kept_of_sender = sender_player.input_self_3
+                    receiver_player.received_from_sender = sender_player.input_other_3
 
-                receiver_player.payoff += sender_player.others3
-                sender_player.payoff += sender_player.you3
-            elif rand == 3:
-                sender_player.kept_of_sender = sender_player.you4
-                receiver_player.received_from_sender = sender_player.others4
+                    receiver_player.payoff += sender_player.input_other_3
+                    sender_player.payoff += sender_player.input_self_3
+                elif rand == 3:
+                    sender_player.kept_of_sender = sender_player.input_self_4
+                    receiver_player.received_from_sender = sender_player.input_other_4
 
-                receiver_player.payoff += sender_player.others4
-                sender_player.payoff += sender_player.you4
-            elif rand == 4:
-                sender_player.kept_of_sender = sender_player.you5
-                receiver_player.received_from_sender = sender_player.others5
+                    receiver_player.payoff += sender_player.input_other_4
+                    sender_player.payoff += sender_player.input_self_4
+                elif rand == 4:
+                    sender_player.kept_of_sender = sender_player.input_self_5
+                    receiver_player.received_from_sender = sender_player.input_other_5
 
-                receiver_player.payoff += sender_player.others5
-                sender_player.payoff += sender_player.you5
-            elif rand == 5:
-                sender_player.kept_of_sender = sender_player.you6
-                receiver_player.received_from_sender = sender_player.others6
+                    receiver_player.payoff += sender_player.input_other_5
+                    sender_player.payoff += sender_player.input_self_5
+                elif rand == 5:
+                    sender_player.kept_of_sender = sender_player.input_self_6
+                    receiver_player.received_from_sender = sender_player.input_other_6
 
-                receiver_player.payoff += sender_player.others6
-                sender_player.payoff += sender_player.you6
-            receiver_player.payoff *= Constants.scale # scaling the payoff
+                    receiver_player.payoff += sender_player.input_other_6
+                    sender_player.payoff += sender_player.input_self_6
+
+                # receiver_player.payoff *= Constants.scale # scaling the payoff
+
+
+        # Case we will consider all the items
+        elif self.subsession.select_items == 'FULL':
+
+            if self.subsession.random_payoff == 'RAND':
+
+                rand = random.randint(0, 14)
+                sender_player.paid_slider = rand+1
+                receiver_player.slider_as_receiver = rand+1
+
+                if rand == 0:
+                    sender_player.kept_of_sender = sender_player.input_self_1
+                    receiver_player.received_from_sender = sender_player.input_other_1
+
+                    receiver_player.payoff += sender_player.input_other_1
+                    sender_player.payoff += sender_player.input_self_1
+                elif rand == 1:
+                    sender_player.kept_of_sender = sender_player.input_self_2
+                    receiver_player.received_from_sender = sender_player.input_other_2
+
+                    receiver_player.payoff += sender_player.input_other_2
+                    sender_player.payoff += sender_player.input_self_2
+                elif rand == 2:
+                    sender_player.kept_of_sender = sender_player.input_self_3
+                    receiver_player.received_from_sender = sender_player.input_other_3
+
+                    receiver_player.payoff += sender_player.input_other_3
+                    sender_player.payoff += sender_player.input_self_3
+                elif rand == 3:
+                    sender_player.kept_of_sender = sender_player.input_self_4
+                    receiver_player.received_from_sender = sender_player.input_other_4
+
+                    receiver_player.payoff += sender_player.input_other_4
+                    sender_player.payoff += sender_player.input_self_4
+                elif rand == 4:
+                    sender_player.kept_of_sender = sender_player.input_self_5
+                    receiver_player.received_from_sender = sender_player.input_other_5
+
+                    receiver_player.payoff += sender_player.input_other_5
+                    sender_player.payoff += sender_player.input_self_5
+                elif rand == 5:
+                    sender_player.kept_of_sender = sender_player.input_self_6
+                    receiver_player.received_from_sender = sender_player.input_other_6
+
+                    receiver_player.payoff += sender_player.input_other_6
+                    sender_player.payoff += sender_player.input_self_6
+                elif rand == 6:
+                    sender_player.kept_of_sender = sender_player.input_self_7
+                    receiver_player.received_from_sender = sender_player.input_other_7
+
+                    receiver_player.payoff += sender_player.input_other_7
+                    sender_player.payoff += sender_player.input_self_7
+                elif rand == 7:
+                    sender_player.kept_of_sender = sender_player.input_self_8
+                    receiver_player.received_from_sender = sender_player.input_other_8
+
+                    receiver_player.payoff += sender_player.input_other_8
+                    sender_player.payoff += sender_player.input_self_8
+                elif rand == 8:
+                    sender_player.kept_of_sender = sender_player.input_self_9
+                    receiver_player.received_from_sender = sender_player.input_other_9
+
+                    receiver_player.payoff += sender_player.input_other_9
+                    sender_player.payoff += sender_player.input_self_9
+                elif rand == 9:
+                    sender_player.kept_of_sender = sender_player.input_self_10
+                    receiver_player.received_from_sender = sender_player.input_other_10
+
+                    receiver_player.payoff += sender_player.input_other_10
+                    sender_player.payoff += sender_player.input_self_10
+                elif rand == 10:
+                    sender_player.kept_of_sender = sender_player.input_self_11
+                    receiver_player.received_from_sender = sender_player.input_other_11
+
+                    receiver_player.payoff += sender_player.input_other_11
+                    sender_player.payoff += sender_player.input_self_11
+                elif rand == 11:
+                    sender_player.kept_of_sender = sender_player.input_self_12
+                    receiver_player.received_from_sender = sender_player.input_other_12
+
+                    receiver_player.payoff += sender_player.input_other_12
+                    sender_player.payoff += sender_player.input_self_12
+                elif rand == 12:
+                    sender_player.kept_of_sender = sender_player.input_self_13
+                    receiver_player.received_from_sender = sender_player.input_other_13
+
+                    receiver_player.payoff += sender_player.input_other_13
+                    sender_player.payoff += sender_player.input_self_13
+                elif rand == 13:
+                    sender_player.kept_of_sender = sender_player.input_self_14
+                    receiver_player.received_from_sender = sender_player.input_other_14
+
+                    receiver_player.payoff += sender_player.input_other_14
+                    sender_player.payoff += sender_player.input_self_14
+                elif rand == 14:
+                    sender_player.kept_of_sender = sender_player.input_self_15
+                    receiver_player.received_from_sender = sender_player.input_other_15
+
+                    receiver_player.payoff += sender_player.input_other_15
+                    sender_player.payoff += sender_player.input_self_15
+
+                # receiver_player.payoff *= Constants.scale # scaling the payoff
+
+            elif self.subsession.random_payoff == 'SUM':
+                sender_values = self.chosen_option_list(sender_player)
+                sender_self, sender_other = zip(*sender_values.values())
+
+                receiver_player.payoff += sum(sender_other)
+                receiver_player.received_from_sender += sum(sender_other)
+
+                sender_player.payoff += sum(sender_self)
+                sender_player.kept_of_sender += sum(sender_self)
 
 
     # Setting the payoff at random item in case of random dictator
     def random_dictator_payoff(self, sender_player, receiver_player):
-        # Case we will consider all the items
-        if Constants.select_items == 'FULL':
 
-            rand = random.randint(0, 14)
+        if self.subsession.random_payoff == 'SUM':
+            # sum of the amount received from the sender player (slider 1 to 6)
+            receiver_player.payoff = sender_player.input_other_1 + sender_player.input_other_2 + \
+                                     sender_player.input_other_3 + sender_player.input_other_4 + \
+                                     sender_player.input_other_5 + sender_player.input_other_6
 
-            # TODO  receiver_player is always the receiver which is not the case according to set_payoffs function
-            sender_player.paid_slider = rand+1
-            receiver_player.slider_as_receiver = rand+1
+            sender_player.payoff = sender_player.input_self_1 + sender_player.input_self_2 + \
+                                   sender_player.input_self_3 + sender_player.input_self_4 + \
+                                   sender_player.input_self_5 + sender_player.input_self_6
 
-            if rand == 0:
-                # receiver payoff
-                receiver_player.payoff = sender_player.others1
-                # sender payoff
-                sender_player.payoff = sender_player.you1
-            elif rand == 1:
-                receiver_player.payoff = sender_player.others2
-                # sender payoff
-                sender_player.payoff = sender_player.you2
-            elif rand == 2:
-                receiver_player.payoff = sender_player.others3
-                # sender payoff
-                sender_player.payoff = sender_player.you3
-            elif rand == 3:
-                receiver_player.payoff = sender_player.others4
-                # sender payoff
-                sender_player.payoff = sender_player.you4
-            elif rand == 4:
-                receiver_player.payoff = sender_player.others5
-                # sender payoff
-                sender_player.payoff = sender_player.you5
-            elif rand == 5:
-                receiver_player.payoff = sender_player.others6
-                # sender payoff
-                sender_player.payoff = sender_player.you6
-            elif rand == 6:
-                receiver_player.payoff = sender_player.others7
-                # sender payoff
-                sender_player.payoff = sender_player.you7
-            elif rand == 7:
-                receiver_player.payoff = sender_player.others8
-                # sender payoff
-                sender_player.payoff = sender_player.you8
-            elif rand == 8:
-                receiver_player.payoff = sender_player.others9
-                # sender payoff
-                sender_player.payoff = sender_player.you9
-            elif rand == 9:
-                receiver_player.payoff = sender_player.others10
-                # sender payoff
-                sender_player.payoff = sender_player.you10
-            elif rand == 10:
-                receiver_player.payoff = sender_player.others11
-                # sender payoff
-                sender_player.payoff = sender_player.you11
-            elif rand == 11:
-                receiver_player.payoff = sender_player.others12
-                # sender payoff
-                sender_player.payoff = sender_player.you12
-            elif rand == 12:
-                receiver_player.payoff = sender_player.others13
-                # sender payoff
-                sender_player.payoff = sender_player.you13
-            elif rand == 13:
-                receiver_player.payoff = sender_player.others14
-                # sender payoff
-                sender_player.payoff = sender_player.you14
-            elif rand == 14:
-                receiver_player.payoff = sender_player.others15
-                # sender payoff
-                sender_player.payoff = sender_player.you15
+        if self.subsession.select_items == 'PRIMARY':
 
-            receiver_player.received_from_sender = receiver_player.payoff
-            sender_player.kept_of_sender = sender_player.payoff
-            receiver_player.payoff *= Constants.scale                      # scaling the payoff
-            sender_player.payoff *= Constants.scale
+            if self.subsession.random_payoff == 'RAND':
+                rand = random.randint(0, 5)
+                sender_player.paid_slider = rand+1
+                receiver_player.slider_as_receiver = rand+1
+
+                if rand == 0:
+                    receiver_player.payoff = sender_player.input_other_1
+                    sender_player.payoff = sender_player.input_self_1
+                elif rand == 1:
+                    receiver_player.payoff = sender_player.input_other_2
+                    sender_player.payoff = sender_player.input_self_2
+                elif rand == 2:
+                    receiver_player.payoff = sender_player.input_other_3
+                    sender_player.payoff = sender_player.input_self_3
+                elif rand == 3:
+                    receiver_player.payoff = sender_player.input_other_4
+                    sender_player.payoff = sender_player.input_self_4
+                elif rand == 4:
+                    receiver_player.payoff = sender_player.input_other_5
+                    sender_player.payoff = sender_player.input_self_5
+                elif rand == 5:
+                    receiver_player.payoff = sender_player.input_other_6
+                    sender_player.payoff = sender_player.input_self_6
+
+                receiver_player.received_from_sender = receiver_player.payoff
+                sender_player.kept_of_sender = sender_player.payoff
+
+        elif self.subsession.select_items == 'FULL':
+
+            if self.subsession.random_payoff == 'RAND':
+
+                rand = random.randint(0, 14)
+                sender_player.paid_slider = rand+1
+                receiver_player.slider_as_receiver = rand+1
+
+                if rand == 0:
+                    # receiver payoff
+                    receiver_player.payoff = sender_player.input_other_1
+                    # sender payoff
+                    sender_player.payoff = sender_player.input_self_1
+                elif rand == 1:
+                    receiver_player.payoff = sender_player.input_other_2
+                    # sender payoff
+                    sender_player.payoff = sender_player.input_self_2
+                elif rand == 2:
+                    receiver_player.payoff = sender_player.input_other_3
+                    # sender payoff
+                    sender_player.payoff = sender_player.input_self_3
+                elif rand == 3:
+                    receiver_player.payoff = sender_player.input_other_4
+                    # sender payoff
+                    sender_player.payoff = sender_player.input_self_4
+                elif rand == 4:
+                    receiver_player.payoff = sender_player.input_other_5
+                    # sender payoff
+                    sender_player.payoff = sender_player.input_self_5
+                elif rand == 5:
+                    receiver_player.payoff = sender_player.input_other_6
+                    # sender payoff
+                    sender_player.payoff = sender_player.input_self_6
+                elif rand == 6:
+                    receiver_player.payoff = sender_player.input_other_7
+                    # sender payoff
+                    sender_player.payoff = sender_player.input_self_7
+                elif rand == 7:
+                    receiver_player.payoff = sender_player.input_other_8
+                    # sender payoff
+                    sender_player.payoff = sender_player.input_self_8
+                elif rand == 8:
+                    receiver_player.payoff = sender_player.input_other_9
+                    # sender payoff
+                    sender_player.payoff = sender_player.input_self_9
+                elif rand == 9:
+                    receiver_player.payoff = sender_player.input_other_10
+                    # sender payoff
+                    sender_player.payoff = sender_player.input_self_10
+                elif rand == 10:
+                    receiver_player.payoff = sender_player.input_other_11
+                    # sender payoff
+                    sender_player.payoff = sender_player.input_self_11
+                elif rand == 11:
+                    receiver_player.payoff = sender_player.input_other_12
+                    # sender payoff
+                    sender_player.payoff = sender_player.input_self_12
+                elif rand == 12:
+                    receiver_player.payoff = sender_player.input_other_13
+                    # sender payoff
+                    sender_player.payoff = sender_player.input_self_13
+                elif rand == 13:
+                    receiver_player.payoff = sender_player.input_other_14
+                    # sender payoff
+                    sender_player.payoff = sender_player.input_self_14
+                elif rand == 14:
+                    receiver_player.payoff = sender_player.input_other_15
+                    # sender payoff
+                    sender_player.payoff = sender_player.input_self_15
+
+                receiver_player.received_from_sender = receiver_player.payoff
+                sender_player.kept_of_sender = sender_player.payoff
+
+                # receiver_player.payoff *= Constants.scale                      # scaling the payoff
+                # sender_player.payoff *= Constants.scale
+
+            elif self.subsession.random_payoff == 'SUM':
+                sender_values = self.chosen_option_list(sender_player)
+                sender_self, sender_other = zip(*sender_values.values())
+
+                receiver_player.payoff += sum(sender_other)
+                sender_player.payoff += sum(sender_self)
 
 
-        elif Constants.select_items == 'PRIMARY':
+    def inequality_aversion_score(self, svo_type, selected_values):
 
-            rand = random.randint(0, 5)
-
-            # TODO  receiver_player is always the receiver which is not the case according to set_payoffs function
-            sender_player.paid_slider = rand+1
-            receiver_player.slider_as_receiver = rand+1
-
-            if rand == 0:
-                receiver_player.payoff = sender_player.others1
-                sender_player.payoff = sender_player.you1
-            elif rand == 1:
-                receiver_player.payoff = sender_player.others2
-                sender_player.payoff = sender_player.you2
-            elif rand == 2:
-                receiver_player.payoff = sender_player.others3
-                sender_player.payoff = sender_player.you3
-            elif rand == 3:
-                receiver_player.payoff = sender_player.others4
-                sender_player.payoff = sender_player.you4
-            elif rand == 4:
-                receiver_player.payoff = sender_player.others5
-                sender_player.payoff = sender_player.you5
-            elif rand == 5:
-                receiver_player.payoff = sender_player.others6
-                sender_player.payoff = sender_player.you6
-
-            receiver_player.received_from_sender = receiver_player.payoff
-            sender_player.kept_of_sender = sender_player.payoff
-
-            receiver_player.payoff *= Constants.scale
-            sender_player.payoff *= Constants.scale
-
-
-
-    # Discretize the last 9 items in the paper to ranges and options
-    def option_number(self, item_number, you, other):
-        # Then this is you option
-        if you > 0:
-            if item_number == 7:
-                if 72 > you:
-                    return 9
-                elif 76 > you >= 72:
-                    return 8
-                elif 79.5 > you >= 76:
-                    return 7
-                elif 83 > you >= 79.5:
-                    return 6
-                elif 87 > you >= 83:
-                    return 5
-                elif 91 > you >= 87:
-                    return 4
-                elif 94.5 > you >= 91:
-                    return 3
-                elif 98 > you >= 94.5:
-                    return 2
-                elif you >= 98:
-                    return 1
-
-            elif item_number == 8:
-                if you > 99.5:
-                    return 9
-                elif 99.5 >= you > 98.5:
-                    return 8
-                elif 98.5 >= you > 97:
-                    return 7
-                elif 97 >= you > 95.5:
-                    return 6
-                elif 95.5 >= you > 94.5:
-                    return 5
-                elif 94.5 >= you > 93.5:
-                    return 4
-                elif 93.5 >= you > 92:
-                    return 3
-                elif 92 >= you > 90.5:
-                    return 2
-                elif 90.5 >= you:
-                    return 1
-                
-            elif item_number == 9:
-                if 53 > you:
-                    return 9
-                elif 59.5 > you >= 53:
-                    return 8
-                elif 66 > you >= 59.5:
-                    return 7
-                elif 72 > you >= 66:
-                    return 6
-                elif 78 > you >= 72:
-                    return 5
-                elif 84.5 > you >= 78:
-                    return 4
-                elif 91 > you >= 84.5:
-                    return 3
-                elif 97 > you >= 91:
-                    return 2
-                elif you >= 97:
-                    return 1
-
-            elif item_number == 10:
-                if 90.5 >= you:
-                    return 9
-                elif 92 >= you > 90.5:
-                    return 8
-                elif 93.5 >= you > 92:
-                    return 7
-                elif 94.5 >= you > 93.5:
-                    return 6
-                elif 95.5 >= you > 94.5:
-                    return 5
-                elif 97 >= you > 95.5:
-                    return 4
-                elif 98.5 >= you > 97:
-                    return 3
-                elif 99.5 >= you > 98.5:
-                    return 2
-                elif you >= 99.5:
-                    return 1
-
-            elif item_number == 11:
-                if you > 98:
-                    return 9
-                elif 98 >= you > 94.5:
-                    return 8
-                elif 94.5 >= you > 91:
-                    return 7
-                elif 91 >= you > 87:
-                    return 6
-                elif 87 >= you > 83:
-                    return 5
-                elif 83 >= you > 79.5:
-                    return 4
-                elif 79.5 >= you > 76:
-                    return 3
-                elif 76 >= you > 72:
-                    return 2
-                elif you <= 72:
-                    return 1
-
-            elif item_number == 12:
-                if you > 97:
-                    return 9
-                elif 97 >= you > 91:
-                    return 8
-                elif 91 >= you > 84.5:
-                    return 7
-                elif 84.5 >= you > 78:
-                    return 6
-                elif 78 >= you > 72:
-                    return 5
-                elif 72 >= you > 66:
-                    return 4
-                elif 66 >= you > 59.5:
-                    return 3
-                elif 59.5 >= you > 53:
-                    return 2
-                elif you <= 53:
-                    return 1
-
-            elif item_number == 13:
-                if you > 97:
-                    return 9
-                elif 97 >= you > 91:
-                    return 8
-                elif 91 >= you > 84.5:
-                    return 7
-                elif 84.5 >= you > 78:
-                    return 6
-                elif 78 >= you > 72:
-                    return 5
-                elif 72 >= you > 66:
-                    return 4
-                elif 66 >= you > 59.5:
-                    return 3
-                elif 59.5 >= you > 53:
-                    return 2
-                elif 53 >= you:
-                    return 1
-
-            elif item_number == 14:
-                if 72 > you:
-                    return 9
-                elif 76 > you >= 72:
-                    return 8
-                elif 79.5 > you >= 76:
-                    return 7
-                elif 83 > you >= 79.5:
-                    return 6
-                elif 87 > you >= 83:
-                    return 5
-                elif 91 > you >= 87:
-                    return 4
-                elif 94.5 > you >= 91:
-                    return 3
-                elif 98 > you >= 94.5:
-                    return 2
-                elif you >= 98:
-                    return 1
-
-            elif item_number == 15:
-                if you > 99.5:
-                    return 9
-                elif 99.5 >= you > 98.5:
-                    return 8
-                elif 98.5 >= you > 97:
-                    return 7
-                elif 97 >= you > 95.5:
-                    return 6
-                elif 95.5 >= you > 94.5:
-                    return 5
-                elif 94.5 >= you > 93.5:
-                    return 4
-                elif 93.5 >= you > 92:
-                    return 3
-                elif 92 >= you > 90.5:
-                    return 2
-                elif 90.5 >= you:
-                    return 1
-
-        # Then this is an other option
-        elif other > 0:
-            if item_number == 7:
-                if other > 97:
-                    return 9
-                elif 97 >= other > 91:
-                    return 8
-                elif 91 >= other > 84.5:
-                    return 7
-                elif 84.5 >= other > 78:
-                    return 6
-                elif 78 >= other > 72:
-                    return 5
-                elif 72 >= other > 66:
-                    return 4
-                elif 66 >= other > 59.5:
-                    return 3
-                elif 59.5 >= other > 53:
-                    return 2
-                elif other <= 53:
-                    return 1
-
-            elif item_number == 8:
-                if 90.5 >= other:
-                    return 9
-                elif 92 >= other > 90.5:
-                    return 8
-                elif 93.5 >= other > 92:
-                    return 7
-                elif 94.5 >= other > 93.5:
-                    return 6
-                elif 95.5 >= other > 94.5:
-                    return 5
-                elif 97 >= other > 95.5:
-                    return 4
-                elif 98.5 >= other > 97:
-                    return 3
-                elif 99.5 >= other > 98.5:
-                    return 2
-                elif other >= 99.5:
-                    return 1
-
-            elif item_number == 9:
-                if other > 98:
-                    return 9
-                elif 98 >= other > 94.5:
-                    return 8
-                elif 94.5 >= other > 91:
-                    return 7
-                elif 91 >= other > 87:
-                    return 6
-                elif 87 >= other > 83:
-                    return 5
-                elif 83 >= other > 79.5:
-                    return 4
-                elif 79.5 >= other > 76:
-                    return 3
-                elif 76 >= other > 72:
-                    return 2
-                elif other <= 72:
-                    return 1
-
-            elif item_number == 10:
-                if other > 98:
-                    return 9
-                elif 98 >= other > 94.5:
-                    return 8
-                elif 94.5 >= other > 91:
-                    return 7
-                elif 91 >= other > 87:
-                    return 6
-                elif 87 >= other > 83:
-                    return 5
-                elif 83 >= other > 79.5:
-                    return 4
-                elif 79.5 >= other > 76:
-                    return 3
-                elif 76 >= other > 72:
-                    return 2
-                elif other <= 72:
-                    return 1
-
-            elif item_number == 11:
-                if 72 > other:
-                    return 9
-                elif 76 > other >= 72:
-                    return 8
-                elif 79.5 > other >= 76:
-                    return 7
-                elif 83 > other >= 79.5:
-                    return 6
-                elif 87 > other >= 83:
-                    return 5
-                elif 91 > other >= 87:
-                    return 4
-                elif 94.5 > other >= 91:
-                    return 3
-                elif 98 > other >= 94.5:
-                    return 2
-                elif other >= 98:
-                    return 1
-
-            elif item_number == 12:
-                if 90.5 >= other:
-                    return 9
-                elif 92 >= other > 90.5:
-                    return 8
-                elif 93.5 >= other > 92:
-                    return 7
-                elif 94.5 >= other > 93.5:
-                    return 6
-                elif 95.5 >= other > 94.5:
-                    return 5
-                elif 97 >= other > 95.5:
-                    return 4
-                elif 98.5 >= other > 97:
-                    return 3
-                elif 99.5 >= other > 98.5:
-                    return 2
-                elif other >= 99.5:
-                    return 1
-
-            elif item_number == 13:
-                if 53 > other:
-                    return 9
-                elif 59.5 > other >= 53:
-                    return 8
-                elif 66 > other >= 59.5:
-                    return 7
-                elif 72 > other >= 66:
-                    return 6
-                elif 78 > other >= 72:
-                    return 5
-                elif 84.5 > other >= 78:
-                    return 4
-                elif 91 > other >= 84.5:
-                    return 3
-                elif 97 > other >= 91:
-                    return 2
-                elif other >= 97:
-                    return 1
-
-            elif item_number == 14:
-                if other > 99.5:
-                    return 9
-                elif 99.5 >= other > 98.5:
-                    return 8
-                elif 98.5 >= other > 97:
-                    return 7
-                elif 97 >= other > 95.5:
-                    return 6
-                elif 95.5 >= other > 94.5:
-                    return 5
-                elif 94.5 >= other > 93.5:
-                    return 4
-                elif 93.5 >= other > 92:
-                    return 3
-                elif 92 >= other > 90.5:
-                    return 2
-                elif 90.5 >= other:
-                    return 1
-
-            elif item_number == 15:
-                if 53 > other:
-                    return 9
-                elif 59.5 > other >= 53:
-                    return 8
-                elif 66 > other >= 59.5:
-                    return 7
-                elif 72 > other >= 66:
-                    return 6
-                elif 78 > other >= 72:
-                    return 5
-                elif 84.5 > other >= 78:
-                    return 4
-                elif 91 > other >= 84.5:
-                    return 3
-                elif 97 > other >= 91:
-                    return 2
-                elif other >= 97:
-                    return 1
-            
-    def inequality_aversion_score(self, svo_type, player): 
         if svo_type == 'Prosocial':
-            item7_option = self.option_number(7, player.you7, 0)
-            item8_option = self.option_number(8, player.you8, 0)
-            item9_option = self.option_number(9, player.you9, 0)
-            item10_option = self.option_number(10, player.you10, 0)
-            item11_option = self.option_number(11, player.you11, 0)
-            item12_option = self.option_number(12, player.you12, 0)
-            item13_option = self.option_number(13, player.you13, 0)
-            item14_option = self.option_number(14, player.you14, 0)
-            item15_option = self.option_number(15, player.you15, 0)
+            # stores the distances of points on sliders to mid_points
+            dist_to_mid = []
+            dist_to_joint_max = []
+            dist_to_altruist = []
+            dist_to_indiv = []
+            scale = self.subsession.scale
 
-            avg_dist_to_equality = ((abs(item7_option - 6) / 8.) +
-            (abs(item8_option - 5) / 8.) +
-            (abs(item9_option - 4) / 8.) +
-            (abs(item10_option - 7) / 8.) +
-            (abs(item11_option - 5) / 8.) +
-            (abs(item12_option - 8) / 8.) +
-            (abs(item13_option - 5) / 8.) +
-            (abs(item14_option - 3) / 8.) +
-            (abs(item15_option - 2) / 8.) ) / 9.
+            for item in Constants.secondary_items:
+                chosen_point = selected_values[item]
 
-            avg_dist_to_joint = ((abs(item7_option - 9) / 8.) +
-            0 +
-            (abs(item9_option - 1) / 8.) +
-            (abs(item10_option - 9) / 8.) +
-            0 +
-            (abs(item12_option - 9) / 8.) +
-            0 +
-            (abs(item14_option - 1) / 8.) +
-            (abs(item15_option - 1) / 8.) ) / 6.
+                x, y = Constants.mid_points[item]
+                mid_point = (scale*x, scale*y)
+                dist_to_mid.append(distance(chosen_point, mid_point))
 
-            avg_dist_to_altruist = ((abs(item7_option - 9) / 8.) +
-            (abs(item8_option - 1) / 8.) +
-            (abs(item9_option - 9) / 8.) +
-            (abs(item10_option - 9) / 8.) +
-            (abs(item11_option - 1) / 8.) +
-            (abs(item12_option - 1) / 8.) +
-            (abs(item13_option - 1) / 8.) +
-            (abs(item14_option - 9) / 8.) +
-            (abs(item15_option - 1) / 8.) ) / 9.
+                x,y = Constants.joint_max[item]
+                joint_max_point = (scale*x, scale*y)
+                dist_to_joint_max.append(distance(chosen_point, joint_max_point))
 
-            avg_dist_to_indiv = ((abs(item7_option - 1) / 8.) +
-            (abs(item8_option - 9) / 8.) +
-            (abs(item9_option - 1) / 8.) +
-            (abs(item10_option - 1) / 8.) +
-            (abs(item11_option - 9) / 8.) +
-            (abs(item12_option - 9) / 8.) +
-            (abs(item13_option - 9) / 8.) +
-            (abs(item14_option - 1) / 8.) +
-            (abs(item15_option - 9) / 8.) ) / 9.
+                x, y = Constants.altruist_points[item]
+                altruist_point = (scale*x, scale*y)
+                dist_to_altruist.append(distance(chosen_point, altruist_point))
 
+                x, y = Constants.individualist_points[item]
+                indiv_point = (scale*x, scale*y)
+                dist_to_indiv.append(distance(chosen_point, indiv_point))
+
+            avg_dist_to_equality = sum(dist_to_mid)/len(dist_to_mid)
+            avg_dist_to_joint = sum(dist_to_joint_max)/len(dist_to_joint_max)
+            avg_dist_to_altruist = sum(dist_to_altruist)/len(dist_to_altruist)
+            avg_dist_to_indiv = sum(dist_to_indiv)/len(dist_to_indiv)
+
+            # The Inequality Aversion Score is only calculated
+            # for those who are closer to efficiency or equality
+            #  than to altruist or individualist.
             altru_indiv = (avg_dist_to_equality <= avg_dist_to_indiv
                            and avg_dist_to_equality <= avg_dist_to_altruist
                            and avg_dist_to_joint <= avg_dist_to_indiv
@@ -821,88 +563,120 @@ class Group(BaseGroup):
         else:
             return -99
 
+    # create a dictionary from the selected values
+    def chosen_option_list(self, player):
+        options = {"item7":  (float(player.input_self_7), float(player.input_other_7)),
+                   "item8":  (float(player.input_self_8), float(player.input_other_8)),
+                   "item9":  (float(player.input_self_9), float(player.input_other_9)),
+                   "item10": (float(player.input_self_10), float(player.input_other_10)),
+                   "item11": (float(player.input_self_11), float(player.input_other_11)),
+                   "item12": (float(player.input_self_12), float(player.input_other_12)),
+                   "item13": (float(player.input_self_13), float(player.input_other_13)),
+                   "item14": (float(player.input_self_14), float(player.input_other_14)),
+                   "item15": (float(player.input_self_15), float(player.input_other_15))}
+        return options
+
     # A function to calculate the payoff for the players
     def set_payoffs(self):
         players = self.get_players()                                        # Get all the players for this game
         for p in players:
             p.svo_angle = self.svo_angle(p)                                 # Calculate the SVO angle
             p.svo_type = self.svo_type(p.svo_angle)                               # Check what is the SVO type of the player
-            if Constants.select_items == 'FULL':                            # Calculate the inequality_aversion_score
-                p.inequality_aversion_score = self.inequality_aversion_score(p.svo_type, p)
+            if self.subsession.select_items == 'FULL':                            # Calculate the inequality_aversion_score
+                selected_values = self.chosen_option_list(player=p)
+                p.inequality_aversion_score = self.inequality_aversion_score(p.svo_type, selected_values)
 
             
         # Case of RING matching 
-        if Constants.matching == 'RING':
+        if self.subsession.matching == 'RING':
             for i, p in enumerate(players):
-                self.ring_payoff(p, players[(i+1)%len(players)])                    
-        
+                self.ring_payoff(p, players[(i+1)%len(players)])
+                players[i].is_sender = True
+                players[(i+1)%len(players)].is_receiver = True
+
+
         # Case of RANDOM_DICTATOR matching
-        elif Constants.matching == 'RANDOM_DICTATOR':
+        elif self.subsession.matching == 'RANDOM_DICTATOR':
                 for i in range(0, len(players),2):                          # for all possible groups
                     rand_first_group = random.randint(0, 1)                 # A random value to choose either player A or B
+
                     if rand_first_group == 0:                               # Choose member A as the sender and B as the receiver.
                         sender_player = players[i]
+                        players[i].is_sender = True
+                        players[i].is_receiver = False
+
                         receiver_player = players[i+1]
+                        players[i+1].is_receiver = True
+                        players[i+1].is_sender = False
                         self.random_dictator_payoff(sender_player, receiver_player)         # Set the payoff
                     else:                                                   # Choose member B as the sender and A as the receiver
-                        receiver_player = players[i+1]
-                        sender_player = players[i]
+                        receiver_player = players[i]
+                        players[i].is_receiver = True
+                        players[i].is_sender = False
+
+                        sender_player = players[i+1]
+                        players[i+1].is_sender = True
+                        players[i+1].is_receiver = False
                         self.random_dictator_payoff(sender_player, receiver_player)         # Set the payoff
 
                     # TODO it seems that this is not correct
                     # self.random_dictator_payoff(a_player, b_player)         # Set the payoff
 
+
 # Player base class which contains the values for a single player per game
 class Player(BasePlayer):
-    # you1 represents the amount of money that the user has chosen for himself for the first item 
-    # others1 represents the amount of money that the user has chosen for others for the first item.
-    you1 = models.DecimalField(max_digits=5, decimal_places=2)
-    others1 = models.DecimalField(max_digits=5, decimal_places=2)
+
+
+
+    # input_self_1 represents the amount of money that the user has chosen for himself for the first item
+    # input_other_1 represents the amount of money that the user has chosen for others for the first item.
+    input_self_1 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_other_1 = models.DecimalField(max_digits=5, decimal_places=2)
 
     # Same as above but for item 2 in the paper
-    you2 = models.DecimalField(max_digits=5, decimal_places=2)
-    others2 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_self_2 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_other_2 = models.DecimalField(max_digits=5, decimal_places=2)
     
     # Same as above but for item 3 in the paper
-    you3 = models.DecimalField(max_digits=5, decimal_places=2)
-    others3 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_self_3 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_other_3 = models.DecimalField(max_digits=5, decimal_places=2)
     
     # Same as above but for item 2 in the paper and so on.
-    you4 = models.DecimalField(max_digits=5, decimal_places=2)
-    others4 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_self_4 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_other_4 = models.DecimalField(max_digits=5, decimal_places=2)
     
-    you5 = models.DecimalField(max_digits=5, decimal_places=2)
-    others5 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_self_5 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_other_5 = models.DecimalField(max_digits=5, decimal_places=2)
     
-    you6 = models.DecimalField(max_digits=5, decimal_places=2)
-    others6 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_self_6 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_other_6 = models.DecimalField(max_digits=5, decimal_places=2)
     
-    you7 = models.DecimalField(max_digits=5, decimal_places=2)
-    others7 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_self_7 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_other_7 = models.DecimalField(max_digits=5, decimal_places=2)
     
-    you8 = models.DecimalField(max_digits=5, decimal_places=2)
-    others8 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_self_8 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_other_8 = models.DecimalField(max_digits=5, decimal_places=2)
     
-    you9 = models.DecimalField(max_digits=5, decimal_places=2)
-    others9 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_self_9 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_other_9 = models.DecimalField(max_digits=5, decimal_places=2)
     
-    you10 = models.DecimalField(max_digits=5, decimal_places=2)
-    others10 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_self_10 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_other_10 = models.DecimalField(max_digits=5, decimal_places=2)
     
-    you11 = models.DecimalField(max_digits=5, decimal_places=2)
-    others11 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_self_11 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_other_11 = models.DecimalField(max_digits=5, decimal_places=2)
     
-    you12 = models.DecimalField(max_digits=5, decimal_places=2)
-    others12 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_self_12 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_other_12 = models.DecimalField(max_digits=5, decimal_places=2)
+
+    input_self_13 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_other_13 = models.DecimalField(max_digits=5, decimal_places=2)
     
-    you13 = models.DecimalField(max_digits=5, decimal_places=2)
-    others13 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_self_14 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_other_14 = models.DecimalField(max_digits=5, decimal_places=2)
     
-    you14 = models.DecimalField(max_digits=5, decimal_places=2)
-    others14 = models.DecimalField(max_digits=5, decimal_places=2)
-    
-    you15 = models.DecimalField(max_digits=5, decimal_places=2)
-    others15 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_self_15 = models.DecimalField(max_digits=5, decimal_places=2)
+    input_other_15 = models.DecimalField(max_digits=5, decimal_places=2)
 
     # order of item 1 in RANDOM order
     random_order1 = models.IntegerField(initial=-1)
@@ -936,4 +710,14 @@ class Player(BasePlayer):
 
     # amount received from the sender
     received_from_sender = models.DecimalField(max_digits=5, decimal_places=2)
+
+    '''
+    random dictator matching
+          is_sender=True : the player was a sender
+          is_receiver=True : the player was a receiver
+    ring matching 
+        both values will be True      
+    '''
+    is_sender = models.BooleanField(initial=False)
+    is_receiver = models.BooleanField(initial=False)
 

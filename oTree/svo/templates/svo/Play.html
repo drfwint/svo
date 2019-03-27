@@ -15,6 +15,33 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.4/themes/flick/jquery-ui.css">
 
 
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.css" />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.js"></script>
+
+
+    <script>
+        {% trans "This website uses cookies to temporarily store the results of this experiment in your browser." as cookies_message %}
+
+        window.addEventListener("load", function(){
+            window.cookieconsent.initialise({
+                "palette": {
+                    "popup": {
+                        "background": "#237afc"
+                    },
+                    "button": {
+                        "background": "#fff",
+                        "text": "#237afc"
+                    }
+                },
+                "position": "top",
+                "content": {
+                    "message":  "{{ cookies_message }}"
+                }
+            })});
+    </script>
+
+
+
     <script src="{% static 'svo3/highcharts/js/highcharts.js' %}"></script>
 
     <script src="{% static 'svo3/sliderPips/jquery-ui-slider-pips.js' %}"></script>
@@ -35,7 +62,7 @@
                     {% blocktrans trimmed %}You receive:{% endblocktrans %}
                 </div>
                 <div class="float-right labels" style="margin-top: 50px;">
-                    {% blocktrans trimmed %}Others receive:{% endblocktrans %}
+                    {% blocktrans trimmed %}Other receives:{% endblocktrans %}
                 </div>
             </div>
             <div class="col-10">
@@ -59,68 +86,68 @@
     </div>
 
     <div id="results" hidden>
-        <input type="number" name="you1" value="0" />
-        <input type="number" name="others1" value="0" />
-        <input type="number" name="you2" value="0" />
-        <input type="number" name="others2" value="0" />
-        <input type="number" name="you3" value="0" />
-        <input type="number" name="others3" value="0" />
-        <input type="number" name="you4" value="0" />
-        <input type="number" name="others4" value="0" />
-        <input type="number" name="you5" value="0" />
-        <input type="number" name="others5" value="0" />
-        <input type="number" name="you6" value="0" />
-        <input type="number" name="others6" value="0" />
-        <input type="number" name="you7" value="0" />
-        <input type="number" name="others7" value="0" />
-        <input type="number" name="you8" value="0" />
-        <input type="number" name="others8" value="0" />
-        <input type="number" name="you9" value="0" />
-        <input type="number" name="others9" value="0" />
-        <input type="number" name="you10" value="0" />
-        <input type="number" name="others10" value="0" />
-        <input type="number" name="you11" value="0" />
-        <input type="number" name="others11" value="0" />
-        <input type="number" name="you12" value="0" />
-        <input type="number" name="others12" value="0" />
-        <input type="number" name="you13" value="0" />
-        <input type="number" name="others13" value="0" />
-        <input type="number" name="you14" value="0" />
-        <input type="number" name="others14" value="0" />
-        <input type="number" name="you15" value="0" />
-        <input type="number" name="others15" value="0" />
+        <input type="number" name="input_self_1" value="0" />
+        <input type="number" name="input_other_1" value="0" />
+        <input type="number" name="input_self_2" value="0" />
+        <input type="number" name="input_other_2" value="0" />
+        <input type="number" name="input_self_3" value="0" />
+        <input type="number" name="input_other_3" value="0" />
+        <input type="number" name="input_self_4" value="0" />
+        <input type="number" name="input_other_4" value="0" />
+        <input type="number" name="input_self_5" value="0" />
+        <input type="number" name="input_other_5" value="0" />
+        <input type="number" name="input_self_6" value="0" />
+        <input type="number" name="input_other_6" value="0" />
+        <input type="number" name="input_self_7" value="0" />
+        <input type="number" name="input_other_7" value="0" />
+        <input type="number" name="input_self_8" value="0" />
+        <input type="number" name="input_other_8" value="0" />
+        <input type="number" name="input_self_9" value="0" />
+        <input type="number" name="input_other_9" value="0" />
+        <input type="number" name="input_self_10" value="0" />
+        <input type="number" name="input_other_10" value="0" />
+        <input type="number" name="input_self_11" value="0" />
+        <input type="number" name="input_other_11" value="0" />
+        <input type="number" name="input_self_12" value="0" />
+        <input type="number" name="input_other_12" value="0" />
+        <input type="number" name="input_self_13" value="0" />
+        <input type="number" name="input_other_13" value="0" />
+        <input type="number" name="input_self_14" value="0" />
+        <input type="number" name="input_other_14" value="0" />
+        <input type="number" name="input_self_15" value="0" />
+        <input type="number" name="input_other_15" value="0" />
     </div>
-    {{ form.you1.errors }}
-    {{ form.you2.errors }}
-    {{ form.you3.errors }}
-    {{ form.you4.errors }}
-    {{ form.you5.errors }}
-    {{ form.you6.errors }}
-    {{ form.you7.errors }}
-    {{ form.you8.errors }}
-    {{ form.you9.errors }}
-    {{ form.you10.errors }}
-    {{ form.you11.errors }}
-    {{ form.you12.errors }}
-    {{ form.you13.errors }}
-    {{ form.you14.errors }}
-    {{ form.you15.errors }}
+    {{ form.input_self_1.errors }}
+    {{ form.input_self_2.errors }}
+    {{ form.input_self_3.errors }}
+    {{ form.input_self_4.errors }}
+    {{ form.input_self_5.errors }}
+    {{ form.input_self_6.errors }}
+    {{ form.input_self_7.errors }}
+    {{ form.input_self_8.errors }}
+    {{ form.input_self_9.errors }}
+    {{ form.input_self_10.errors }}
+    {{ form.input_self_11.errors }}
+    {{ form.input_self_12.errors }}
+    {{ form.input_self_13.errors }}
+    {{ form.input_self_14.errors }}
+    {{ form.input_self_15.errors }}
 
-    {{ form.others1.errors }}
-    {{ form.others2.errors }}
-    {{ form.others3.errors }}
-    {{ form.others4.errors }}
-    {{ form.others5.errors }}
-    {{ form.others6.errors }}
-    {{ form.others7.errors }}
-    {{ form.others8.errors }}
-    {{ form.others9.errors }}
-    {{ form.others10.errors }}
-    {{ form.others11.errors }}
-    {{ form.others12.errors }}
-    {{ form.others13.errors }}
-    {{ form.others14.errors }}
-    {{ form.others15.errors }}
+    {{ form.input_other_1.errors }}
+    {{ form.input_other_2.errors }}
+    {{ form.input_other_3.errors }}
+    {{ form.input_other_4.errors }}
+    {{ form.input_other_5.errors }}
+    {{ form.input_other_6.errors }}
+    {{ form.input_other_7.errors }}
+    {{ form.input_other_8.errors }}
+    {{ form.input_other_9.errors }}
+    {{ form.input_other_10.errors }}
+    {{ form.input_other_11.errors }}
+    {{ form.input_other_12.errors }}
+    {{ form.input_other_13.errors }}
+    {{ form.input_other_14.errors }}
+    {{ form.input_other_15.errors }}
 
 {% endblock %}
 
@@ -255,7 +282,7 @@
         var gameStarted = false;
         var itemOrder = {{ item_order }};
         var itemIndex;
-        var sliderInitType =  '{{ slider_init_type }}';
+        var sliderInitType =  '{{ slider_init }}';
 
         /* this defines the choices as listed on the sheets, the array looks like:
         set 1 --> option 1 --> 'you get' lowest value
@@ -493,6 +520,9 @@
         results[13] = new Array(3);
         results[14] = new Array(3);
 
+        {% trans "You" as you_label %}
+        {% trans "Other person" as other_label %}
+
         var currentItem; // represents the current item that the user sees
         var chart = new Highcharts.Chart({
             chart: {
@@ -504,18 +534,25 @@
                 text: ''
             },
             xAxis: {
-                categories: [{% blocktrans trimmed %}'You'{% endblocktrans %},
-                    {% blocktrans trimmed %}'Other person'{% endblocktrans %}],
+                categories: ["{{ you_label }}",
+                    "{{ other_label }}"],
                 title: {
                     text: null
                 }
             },
             yAxis: {
                 min: 0,
-                max: 100 * scale,
+                max: parseFloat(100*scale).toFixed(2),
                 labels: {
-                    overflow: 'justify'
+                    overflow: 'justify',
+                    formatter : function () {
+                        if(Math.round(this.value) !== this.value){
+                            return parseFloat(this.value).toFixed(2);
+                        }
+                        else{ return this.value;}
+                    }
                 },
+
                 title:{
                     text: null
                 }
@@ -526,7 +563,13 @@
             plotOptions: {
                 bar: {
                     dataLabels: {
-                        enabled: true
+                        enabled: true,
+                        formatter : function () {
+                            if(Math.round(this.y) !== this.y){
+                                return parseFloat(this.y).toFixed(2);
+                            }
+                            else{ return this.y; }
+                        }
                     }
                 }
             },
@@ -538,7 +581,7 @@
             },
             series: [{
                 name: 'Results',
-                data: [100,0]
+                data: [parseFloat(100*scale).toFixed(2),0]
             }]
         });
 
@@ -689,16 +732,33 @@
 
 
         function updateDynamic(you,others){
-            currentX = you;
-            currentY = others;
-            chart.series[0].data[0].update(y=you * scale);
-            chart.series[0].data[1].update(y=others * scale);
+
+            scaledYou = getScaledLabel(you);
+            scaledOthers = getScaledLabel(others);
+            currentX = scaledYou.toFixed(2);
+            currentY = scaledOthers.toFixed(2);
+
+            chart.series[0].data[0].update(y = scaledYou);
+            chart.series[0].data[1].update(y = scaledOthers);
+        }
+
+        function getlength(number) {
+            return parseInt(number).toString().length;
+        }
+
+        function getShowingLabel(label) {
+            scaledLabel = getScaledLabel(label)
+            showingLabel = scaledLabel
+            if(Math.round(scaledLabel) !== scaledLabel){
+                showingLabel = scaledLabel.toFixed(2);
+            }
+            return showingLabel
         }
 
         function updateSlider(rangeMin, rangeMax, itemIndex, initValue){
 
             var labels = new Array();
-
+            precision_val = 2
             if(others){
                 var labelIndex = 0;
                 initValue = rangeMax-(initValue-rangeMin);
@@ -711,8 +771,14 @@
                         if(currentItem[7] !=1 ){
                             otherLabel = parseInt(Math.ceil(getY(youLabel, currentItem[7])));
                         }
-                        console.log(otherLabel+" "+ youLabel);
-                        labels.push("<i>{0}</i><span>{1}</span>".format(youLabel, otherLabel));
+
+                        youToShow = getShowingLabel(youLabel);
+                        otherToShow = getShowingLabel(otherLabel);
+
+                        //getScaledLabel(otherLabel).toPrecision(2);
+
+                        {#labels.push("<i>{0}</i><span>{1}</span>".format(youLabel, otherLabel));#}
+                        labels.push("<i>{0}</i><span>{1}</span>".format(youToShow, otherToShow));
                         labelIndex++;
                     }
                     else{
@@ -733,7 +799,13 @@
 
                         if (j == youLabel) {
                             var otherLabel = parseInt(Math.ceil(getY(youLabel, currentItem[7])));
-                            labels.push("<i>{0}</i><span>{1}</span>".format(youLabel, otherLabel));
+                            {#youToShow = getScaledLabel(youLabel).toPrecision(2);#}
+                            {#otherToShow = getScaledLabel(otherLabel).toPrecision(2);#}
+                            youToShow = getShowingLabel(youLabel);
+                            otherToShow = getShowingLabel(otherLabel);
+
+                            {#labels.push("<i>{0}</i><span>{1}</span>".format(youLabel, otherLabel));#}
+                            labels.push("<i>{0}</i><span>{1}</span>".format(youToShow, otherToShow));
                             labelIndex++;
                         }
                         else{
@@ -752,7 +824,13 @@
 
                         if (j == youLabel) {
                             var otherLabel = parseInt(Math.ceil(getY(youLabel, currentItem[7])));
-                            labels.push("<i>{0}</i><span>{1}</span>".format(youLabel, otherLabel));
+                            {#youToShow = getScaledLabel(youLabel).toPrecision(2);#}
+                            {#otherToShow = getScaledLabel(otherLabel).toPrecision(2);#}
+
+                            youToShow = getShowingLabel(youLabel);
+                            otherToShow = getShowingLabel(otherLabel);
+                            {#labels.push("<i>{0}</i><span>{1}</span>".format(youLabel, otherLabel));#}
+                            labels.push("<i>{0}</i><span>{1}</span>".format(youToShow, otherToShow));
                             labelIndex++;
                         }
                         else{
@@ -773,6 +851,7 @@
                     rest: "label",
                     labels: labels
                 });
+
             {% comment %}
                         .slider("float", {
                             step:1
@@ -781,14 +860,9 @@
 
         }
 
-
-        function updateMinMax(youMin, youMax, othersMin, othersMax) {
-
-            $("#youMinVal").html(youMin * scale);
-            $("#youMaxVal").html(youMax * scale);
-
-            $("#othersMinVal").html(othersMin * scale);
-            $("#othersMaxVal").html(othersMax * scale);
+        function getScaledLabel(label){
+            scaledLabel = parseFloat(scale*label);
+            return scaledLabel;
         }
 
 
@@ -800,6 +874,8 @@
 
         function init(){
             var labelNum = sliderLabels[i].length;
+
+            {#setCookie("django_language", "{{ django_language }}", 20);#}
 
             if (i <= numberOfUsedItems) {
                 $("#taskNumber").text(i+1);
@@ -837,27 +913,28 @@
                     default:
                         console.log("Slider initialization problem "+ sliderInitType);
                 }
-                chart.series[0].data[0].update(youInit * scale);
-                chart.series[0].data[1].update(otherInit * scale);
+                {#console.log("youInit "+youInit+"/ otherInit "+otherInit);#}
+                chart.series[0].data[0].update(getScaledLabel(youInit));
+                chart.series[0].data[1].update(getScaledLabel(otherInit));
 
                 if( currentItem[7] == 1 ){
                     others = true;
                     rangeMin = currentItem[4];
                     rangeMax = currentItem[5];
-                    currentX = youInit;
-                    currentY = otherInit;
+                    currentX = getScaledLabel(youInit).toFixed(2);
+                    currentY = getScaledLabel(otherInit).toFixed(2);
                     // rangeMin, rangeMax, youMin, youMax, othersMin, othersMaxVal
-                    updateMinMax(currentItem[1], currentItem[2], currentItem[5], currentItem[4]);
+                    {#updateMinMax(currentItem[1], currentItem[2], currentItem[5], currentItem[4]);#}
                     updateSlider(rangeMin, rangeMax, itemIndex, otherInit);
                 }
                 else{
                     others = false;
                     rangeMin = currentItem[1];
                     rangeMax = currentItem[2];
-                    currentX = youInit;
-                    currentY = otherInit;
+                    currentX = getScaledLabel(youInit).toFixed(2);
+                    currentY = getScaledLabel(otherInit).toFixed(2);
                     // rangeMin, rangeMax, youMin, youMax, othersMin, othersMaxVal
-                    updateMinMax(currentItem[1], currentItem[2], currentItem[5], currentItem[4]);
+                    {#updateMinMax(currentItem[1], currentItem[2], currentItem[5], currentItem[4]);#}
                     updateSlider(rangeMin, rangeMax, itemIndex, youInit);
                 }
             }else{
@@ -867,108 +944,110 @@
         }
 
 
-        $('form').on('submit', function(e){
-            e.preventDefault();
-            console.log("CurrentX " + currentX);
-            console.log("CurrentY " + currentY);
-            results[i][0] = currentItem[7];
-            results[i][1] = currentX;
-            results[i][2] = currentY;
-            i++;
-            setCookie("results", JSON.stringify(results), 20);
-            setCookie("i", i, 20);
+            $('form').on('submit', function(e){
+                e.preventDefault();
+                console.log("CurrentX " + currentX);
+                console.log("CurrentY " + currentY);
 
-            if (i <= numberOfUsedItems){
+                results[i][0] = currentItem[7];
+                results[i][1] = currentX;
+                results[i][2] = currentY;
+                i++;
+                setCookie("results", JSON.stringify(results), 20);
+                setCookie("i", i, 20);
+
+                if (i <= numberOfUsedItems){
+                    init();
+                }else{
+                    inputsYou = $("#results input[name*='input_self']");
+                    for (j =0; j<= numberOfUsedItems; j++ ){
+                        inputsYou[results[j][0]-1].value = results[j][1]; // -1 because 14 instead of 15
+                    }
+                    inputsOthers = $("#results input[name*='input_other']");
+                    for (j =0; j<= numberOfUsedItems; j++ ){
+                        inputsOthers[results[j][0]-1].value = results[j][2];
+                    }
+                    // Delete the Cookies
+                    setCookie("results", "", -20);
+                    setCookie("i", "", -20);
+                    setCookie("workingSet", "", -20);
+                    setCookie("numberOfUsedItems", "", -20);
+                    setCookie("django_language", "", -20);
+                    this.submit();
+                }
+                console.log("submit");
+            });
+
+
+            $(function(){
+                console.log("Initialize");
+                if (checkCookie("results") && checkCookie("workingSet") && checkCookie("i") && checkCookie("numberOfUsedItems")){
+                    console.log("Restoring!");
+                    results = JSON.parse(getCookie("results"));
+                    workingSet = JSON.parse(getCookie("workingSet"));
+                    i = parseInt(getCookie("i"));
+                    numberOfUsedItems = parseInt(getCookie("numberOfUsedItems"));
+                    gameStarted = true;
+
+                }else {
+                    i=0;
+                }
+                if (selectItems == 'PRIMARY' && !gameStarted){
+                    numberOfUsedItems = 5;
+                    workingSet = set.slice(0,6); // Get only the first six items
+                }
+                else if (selectItems == 'FULL' && !gameStarted){
+                    numberOfUsedItems = 14;
+                    workingSet = set.slice();   // Get the complete set of items primary and secondary
+                }
+
+                if (!gameStarted){
+                    workingSet = setOrder(workingSet);
+                }
+
+                // if there is no workingSet cookie set it
+                if(!checkCookie("workingSet")){
+                    setCookie("workingSet", JSON.stringify(workingSet), 20);
+                    setCookie("numberOfUsedItems", numberOfUsedItems, 20);
+                }
+                // Init for the first time or continue after page reload.
                 init();
-            }else{
-                inputsYou = $("#results input[name*='you']");
-                for (j =0; j<= numberOfUsedItems; j++ ){
-                    inputsYou[results[j][0]-1].value = results[j][1]; // -1 because 14 instead of 15
+            });
+
+            // Cookies management code
+            function setCookie(cname, cvalue, exdays) {
+                var d = new Date();
+                d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+                var expires = "expires="+d.toUTCString();
+                document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+            }
+
+
+            // returns the value of a cookie
+            function getCookie(cname) {
+                var name = cname + "=";
+                var ca = document.cookie.split(';');
+                for(var f = 0; f < ca.length; f++) {
+                    var c = ca[f];
+                    while (c.charAt(0) == ' ') {
+                        c = c.substring(1);
+                    }
+                    if (c.indexOf(name) == 0) {
+                        return c.substring(name.length, c.length);
+                    }
                 }
-                inputsOthers = $("#results input[name*='others']");
-                for (j =0; j<= numberOfUsedItems; j++ ){
-                    inputsOthers[results[j][0]-1].value = results[j][2];
-                }
-                // Delete the Cookies
-                setCookie("results", "", -20);
-                setCookie("i", "", -20);
-                setCookie("workingSet", "", -20);
-                setCookie("numberOfUsedItems", "", -20);
-                this.submit();
-            }
-            console.log("submit");
-        });
-
-
-        $(function(){
-            console.log("Initialize");
-            if (checkCookie("results") && checkCookie("workingSet") && checkCookie("i") && checkCookie("numberOfUsedItems")){
-                console.log("Restoring!");
-                results = JSON.parse(getCookie("results"));
-                workingSet = JSON.parse(getCookie("workingSet"));
-                i = parseInt(getCookie("i"));
-                numberOfUsedItems = parseInt(getCookie("numberOfUsedItems"));
-                gameStarted = true;
-
-            }else {
-                i=0;
-            }
-            if (selectItems == 'PRIMARY' && !gameStarted){
-                numberOfUsedItems = 5;
-                workingSet = set.slice(0,6); // Get only the first six items
-            }
-            else if (selectItems == 'FULL' && !gameStarted){
-                numberOfUsedItems = 14;
-                workingSet = set.slice();   // Get the complete set of items primary and secondary
+                return "";
             }
 
-            if (!gameStarted){
-                workingSet = setOrder(workingSet);
-            }
-
-            // if there is no workingSet cookie set it
-            if(!checkCookie("workingSet")){
-                setCookie("workingSet", JSON.stringify(workingSet), 20);
-                setCookie("numberOfUsedItems", numberOfUsedItems, 20);
-            }
-            // Init for the first time or continue after page reload.
-            init();
-        });
-
-        // Cookies management code
-        function setCookie(cname, cvalue, exdays) {
-            var d = new Date();
-            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-            var expires = "expires="+d.toUTCString();
-            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-        }
-
-
-        // returns the value of a cookie
-        function getCookie(cname) {
-            var name = cname + "=";
-            var ca = document.cookie.split(';');
-            for(var f = 0; f < ca.length; f++) {
-                var c = ca[f];
-                while (c.charAt(0) == ' ') {
-                    c = c.substring(1);
-                }
-                if (c.indexOf(name) == 0) {
-                    return c.substring(name.length, c.length);
+            // checks whether a cookie exist or not
+            function checkCookie(cname) {
+                var cook = getCookie(cname);
+                if (cook != "") {
+                    return true;
+                }else{
+                    return false;
                 }
             }
-            return "";
-        }
-
-        // checks whether a cookie exist or not
-        function checkCookie(cname) {
-            var cook = getCookie(cname);
-            if (cook != "") {
-                return true;
-            }else{
-                return false;
-            }
-        }
 
     </script>
 

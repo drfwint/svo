@@ -3,29 +3,96 @@
 {% load staticfiles otree_tags %}
 
 {% block title %}
-    {% blocktrans trimmed %}Social Value Orientation results{% endblocktrans %}
+    {% blocktrans trimmed %}Social Value Orientation Results{% endblocktrans %}
 {% endblock %}
 
 {% block content %}
-    <p>
-    {% blocktrans trimmed %}You answered the{% endblocktrans %} {{subsession.select_items}} Primary or Primarz and Secondary {% blocktrans trimmed %}questions{% endblocktrans %}.
-    If random dictator
-        You were randomly selected as Sender Receiver
-        Slider X was selected for pazment
-        {% blocktrans trimmed %}Your profit is therefore{% endblocktrans %} {{ player.payoff }}.
-    If Ring Matching
-        Slider X was selected for pazment
-        As a Receiver, zou received X
-        As a Sender, zou kept Z
-        {% blocktrans trimmed %}Your profit is therefore{% endblocktrans %} {{ player.payoff }}.
+    <div class="alert alert-primary" role="alert">
+        {% if subsession.select_items == 'FULL' %}
+            {% blocktrans trimmed%}
+                You answered the FULL questions.
+            {% endblocktrans %}
+        {% elif subsession.select_items == 'PRIMARY' %}
+            {% blocktrans trimmed%}
+                You answered the PRIMARY questions.
+            {% endblocktrans %}
+        {% endif %}
 
-    <br> {% blocktrans trimmed %}Your social value orientation angle is{% endblocktrans %}  {{player.svo_angle}}. 
-    <br> {% blocktrans trimmed %}Therefore your svo type is{% endblocktrans %} {{player.svo_type}}.
-    If Primary and Secondary
-        <br> {% blocktrans trimmed %}Your inequalitz aversion score is {% endblocktrans %} {{player.ineq}}.
+        <p>
+            {% if subsession.matching == 'RANDOM_DICTATOR'  %}
+                {% if player.is_sender == True %}
+                    {% blocktrans trimmed%}
+                        You were randomly selected as the Sender.
+                    {% endblocktrans %}
+                    <br/>
+                    {% blocktrans trimmed with slider_num=player.paid_slider %}
+                        Slider {{ slider_num  }} was selected for payment.
+                    {% endblocktrans %}
+                {% endif %}
+                {% if player.is_receiver == True %}
+                    {% blocktrans trimmed%}
+                        You were randomly selected as the Receiver.
+                    {% endblocktrans %}
+                    <br/>
+                    {% blocktrans trimmed with slider_num=player.slider_as_receiver %}
+                        Slider {{ slider_num  }} was selected for payment.
+                    {% endblocktrans %}
+                {% endif %}
+                </p>
 
-    </p>
-    {% next_button %}
+                </div>
+
+            {% endif %}
+
+
+    {% if subsession.matching == 'RING'  %}
+        <div class="alert alert-primary" role="alert">
+            <p>
+                {% blocktrans trimmed with slider_num=player.paid_slider %}
+                    Slider {{ slider_num  }} was selected for payment.
+                {% endblocktrans %}
+            </p>
+            <p>
+                {% blocktrans trimmed with received=player.received_from_sender %}
+                    As a Receiver, you received {{ received }}.
+                {% endblocktrans %}
+            </p>
+            <p>
+                {% blocktrans trimmed with kept=player.kept_of_sender %}
+                    As a Sender, you kept {{ kept }}.
+                {% endblocktrans %}
+            </p>
+        </div>
+    {% endif %}
+
+    <div class="alert alert-info" role="alert">
+        {% blocktrans trimmed %}Your profit is therefore:{% endblocktrans %} {{ player.payoff }}.
+    </div>
+
+    <div class="alert alert-light" role="alert">
+        <br> {% blocktrans trimmed %}Your social value orientation angle is{% endblocktrans %}  {{player.svo_angle}}.
+        <br> {% blocktrans trimmed %}Your svo type is{% endblocktrans %} {{player.svo_type}}.
+        <br> {% blocktrans trimmed %}Your inequality aversion score is {% endblocktrans %} {{player.inequality_aversion_score}}.
+    </div>
+
+
+
 {% endblock %}
 
+
+{% block styles %}
+    <style>
+
+        .col-centered {
+            display:inline-block;
+            float:none;
+            /* reset the text-align */
+        {#text-align:left;#}
+            /* inline-block space fix */
+            margin-right:-4px;
+            text-align: center;
+        }
+
+    </style>
+{% endblock %}
 
