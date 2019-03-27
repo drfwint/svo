@@ -70,7 +70,8 @@
     </div>
 
     <div class="alert alert-light" role="alert">
-        <br> {% blocktrans trimmed %}Your social value orientation angle is{% endblocktrans %}  {{player.svo_angle}}.
+        <br> {% blocktrans trimmed %}Your social value orientation angle is{% endblocktrans %}  {{player.svo_angle|floatformat:2}}.
+        <br> {% blocktrans trimmed %}Your alpha is{% endblocktrans %}  {{player.alpha|floatformat:2}}.
         <br> {% blocktrans trimmed %}Your svo type is{% endblocktrans %} {{player.svo_type}}.
         <br> {% blocktrans trimmed %}Your inequality aversion score is {% endblocktrans %} {{player.inequality_aversion_score}}.
     </div>

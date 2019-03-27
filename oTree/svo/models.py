@@ -7,7 +7,7 @@ from django import http
 from django.conf import settings
 
 import random
-from math import atan, degrees, sqrt
+from math import atan, degrees, sqrt, tan, pi
 from .utils import compute_line, intersection_point, distance, max_tuple
 
 author = 'Abdul Majeed Alkattan, Emad Bahrami'
@@ -581,6 +581,7 @@ class Group(BaseGroup):
         players = self.get_players()                                        # Get all the players for this game
         for p in players:
             p.svo_angle = self.svo_angle(p)                                 # Calculate the SVO angle
+            p.alpha = tan(2*pi*p.svo_angle/360)                                # calculate the alpha value
             p.svo_type = self.svo_type(p.svo_angle)                               # Check what is the SVO type of the player
             if self.subsession.select_items == 'FULL':                            # Calculate the inequality_aversion_score
                 selected_values = self.chosen_option_list(player=p)
@@ -695,7 +696,8 @@ class Player(BasePlayer):
     random_order14 = models.IntegerField(initial=-1)
     random_order15 = models.IntegerField(initial=-1)
 
-    svo_angle = models.DecimalField(max_digits=7, decimal_places=2)
+    svo_angle = models.DecimalField(max_digits=10, decimal_places=5)
+    alpha = models.DecimalField(max_digits=10, decimal_places=5)
     svo_type = models.CharField(choices=['Altruist', 'Prosocial', 'Individualist', 'Competitive'])
     inequality_aversion_score = models.DecimalField(max_digits=7, decimal_places=2)
 

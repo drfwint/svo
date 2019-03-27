@@ -43,7 +43,7 @@ SESSION_CONFIGS = [
 
 # ISO-639 code
 # for example: de, fr, it, en
-# LANGUAGE_CODE = 'en'
+LANGUAGE_CODE = 'en'
 
 
 # e.g. EUR, GBP, CNY, JPY
