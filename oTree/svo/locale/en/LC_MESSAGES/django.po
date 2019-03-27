@@ -38,7 +38,7 @@ msgid "Your social value orientation angle is"
 msgstr ""
 
 #: templates/svo/Results.html:13
-msgid "Therefore your svo type is"
+msgid "Therefore your svo_de_ring_full_sum type is"
 msgstr ""
 
 #: templates/svo/play.html:7

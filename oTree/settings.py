@@ -1,100 +1,5 @@
-import os
 from os import environ
-
-import dj_database_url
-from boto.mturk import qualification
-
-import otree.settings
-
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# the environment variable OTREE_PRODUCTION controls whether Django runs in
-# DEBUG mode. If OTREE_PRODUCTION==1, then DEBUG=False
-if environ.get('OTREE_PRODUCTION') not in {None, '', '0'}:
-    DEBUG = False
-else:
-    DEBUG = True
-
-ADMIN_USERNAME = 'admin'
-
-# for security, best to set admin password in an environment variable
-ADMIN_PASSWORD = environ.get('OTREE_ADMIN_PASSWORD')
-
-# don't share this with anybody.
-SECRET_KEY = '(2vij*rvbws_))t()(v52-$(o66ae2)-q5g(ocdfzx0e%o0%&n'
-
-# To use a database other than sqlite,
-# set the DATABASE_URL environment variable.
-# Examples:
-# postgres://USER:PASSWORD@HOST:PORT/NAME
-# mysql://USER:PASSWORD@HOST:PORT/NAME
-
-DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')
-    )
-}
-
-# AUTH_LEVEL:
-# If you are launching a study and want visitors to only be able to
-# play your app if you provided them with a start link, set the
-# environment variable OTREE_AUTH_LEVEL to STUDY.
-# If you would like to put your site online in public demo mode where
-# anybody can play a demo version of your game, set OTREE_AUTH_LEVEL
-# to DEMO. This will allow people to play in demo mode, but not access
-# the full admin interface.
-
-AUTH_LEVEL = environ.get('OTREE_AUTH_LEVEL')
-
-# setting for integration with AWS Mturk
-AWS_ACCESS_KEY_ID = environ.get('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = environ.get('AWS_SECRET_ACCESS_KEY')
-
-
-# e.g. EUR, CAD, GBP, CHF, CNY, JPY
-REAL_WORLD_CURRENCY_CODE = 'USD'
-USE_POINTS = True
-
-USE_I18N = True
-# e.g. en, de, fr, it, ja, zh-hans
-# see: https://docs.djangoproject.com/en/1.9/topics/i18n/#term-language-code
-# Sets the language that will be displayed to the SVO user. 
-# Languages are ('en', 'de', 'it')
-LANGUAGE_CODE = 'de'
-
-# if an app is included in SESSION_CONFIGS, you don't need to list it here
-# if an app is included in SESSION_CONFIGS, you don't need to list it here
-INSTALLED_APPS = ['otree']
-
-# SENTRY_DSN = ''
-
-DEMO_PAGE_INTRO_TEXT = """
-oTree games
-"""
-
-# from here on are qualifications requirements for workers
-# see description for requirements on Amazon Mechanical Turk website:
-# http://docs.aws.amazon.com/AWSMechTurk/latest/AWSMturkAPI/ApiReference_QualificationRequirementDataStructureArticle.html
-# and also in docs for boto:
-# https://boto.readthedocs.org/en/latest/ref/mturk.html?highlight=mturk#module-boto.mturk.qualification
-
-mturk_hit_settings = {
-    'keywords': ['easy', 'bonus', 'choice', 'study'],
-    'title': 'Title for your experiment',
-    'description': 'Description for your experiment',
-    'frame_height': 500,
-    'preview_template': 'global/MTurkPreview.html',
-    'minutes_allotted_per_assignment': 60,
-    'expiration_hours': 7*24,  # 7 days
-    # 'grant_qualification_id': 'YOUR_QUALIFICATION_ID_HERE',# to prevent retakes
-    'qualification_requirements': [
-        # qualification.LocaleRequirement("EqualTo", "US"),
-        # qualification.PercentAssignmentsApprovedRequirement("GreaterThanOrEqualTo", 50),
-        # qualification.NumberHitsApprovedRequirement("GreaterThanOrEqualTo", 5),
-        # qualification.Requirement('YOUR_QUALIFICATION_ID_HERE', 'DoesNotExist')
-    ]
-}
+from django.utils.translation import gettext_lazy as _
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs
 # in SESSION_CONFIGS, except those that explicitly override it.
@@ -102,29 +7,78 @@ mturk_hit_settings = {
 # e.g. self.session.config['participation_fee']
 
 SESSION_CONFIG_DEFAULTS = {
-    'real_world_currency_per_point': 0.01,
-    'participation_fee': 10.00,
-    'num_bots': 6,
+    'real_world_currency_per_point': 1.00,
+    'participation_fee': 0.00,
     'doc': "",
-    'mturk_hit_settings': mturk_hit_settings,
 }
 
 
 SESSION_CONFIGS = [
-    # {
-    #     'name': '...',
-    #     'display_name': '...',
-    #     'num_demo_participants': ...,
-    #     'app_sequence': ['...'],
-    # }
-    {
-        'name': 'svo',
-        'display_name': "Social Value Orientation",
-        'num_demo_participants': 4,
-        'app_sequence': ['svo'],
-    },
+{
+    'name': 'svo',
+    'display_name': "Social Value Orientation",
+    'num_demo_participants': 4,
+    'app_sequence': ['svo'],
+		'matching': 'RING',
+		'select_items': 'FULL',
+		'items_in_random_order': False,
+		'scale': 0.1 ,
+		'slider_init': 'LEFT',
+		'random_payoff': 'RAND',
+		'precision': 'INTEGERS',
+		'language': 'de',
+		'doc': """
+    	Edit the 'matching' parameter to select RING matching or 
+    	RANDOM_DICTATOR matching.</br>
+    	Edit the 'select_items' parameter to whether we use the first six items 
+    	to calculate the payoff (PRIMARY) or the 15 items (FULL).</br>
+    	Edit the 'scale' parameter to scale the slider values.</br>
+    	Edit the 'slider_init' parameter with LEFT, RIGHT, RAND or AVG to initialize the slider.</br>
+    	Edit the 'random_payoff' parameter with RAND or SUM to determine the way to calculate the payoff.</br>
+    	Edit the 'precision' parameter with TWO_DIGITS_AFTER_POINT or INTEGERS.
+    """
+  }
 ]
 
-# anything you put after the below line will override
-# oTree's default settings. Use with caution.
-otree.settings.augment_settings(globals())
+
+# ISO-639 code
+# for example: de, fr, it, en
+# LANGUAGE_CODE = 'en'
+
+
+# e.g. EUR, GBP, CNY, JPY
+REAL_WORLD_CURRENCY_CODE = 'EUR'
+USE_POINTS = False
+# POINTS_DECIMAL_PLACES = 2
+
+ROOMS = []
+
+
+# AUTH_LEVEL:
+# this setting controls which parts of your site are freely accessible,
+# and which are password protected:
+# - If it's not set (the default), then the whole site is freely accessible.
+# - If you are launching a study and want visitors to only be able to
+#   play your app if you provided them with a start link, set it to STUDY.
+# - If you would like to put your site online in public demo mode where
+#   anybody can play a demo version of your game, but not access the rest
+#   of the admin interface, set it to DEMO.
+
+# for flexibility, you can set it in the environment variable OTREE_AUTH_LEVEL
+AUTH_LEVEL = environ.get('OTREE_AUTH_LEVEL')
+
+ADMIN_USERNAME = 'admin'
+# for security, best to set admin password in an environment variable
+ADMIN_PASSWORD = environ.get('OTREE_ADMIN_PASSWORD')
+
+
+# Consider '', None, and '0' to be empty/false
+DEBUG = (environ.get('OTREE_PRODUCTION') in {None, '', '0'})
+
+DEMO_PAGE_INTRO_HTML = """ """
+
+# don't share this with anybody.
+SECRET_KEY = '(5m5%_xax9c^vi95ztd7*h0-8*1w*^v2&=y*m_2&ncuss)cut8'
+
+# if an app is included in SESSION_CONFIGS, you don't need to list it here
+INSTALLED_APPS = ['otree']

@@ -5,58 +5,97 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-07-20 16:19+0200\n"
-"PO-Revision-Date: 2018-07-20 16:23+0100\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2018-10-29 15:23+0100\n"
+"PO-Revision-Date: 2018-10-29 15:24+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.5.4\n"
 
-#: templates/svo/Play.html:25
+#: templates/svo/Play.html:23
+msgid ""
+"This website uses cookies to temporarily store the results of this "
+"experiment in your browser."
+msgstr ""
+"Diese Website verwendet Cookies, um die Ergebnisse dieses Experiments "
+"vorübergehend in Ihrem Browser zu speichern."
+
+#: templates/svo/Play.html:52
 msgid "Decision"
 msgstr "Entscheidung"
 
-#: templates/svo/Play.html:35
+#: templates/svo/Play.html:62
 msgid "You receive:"
 msgstr "Sie erhalten:"
 
-#: templates/svo/Play.html:38
-msgid "Others receive:"
-msgstr "Andere erhalten:"
+#: templates/svo/Play.html:65
+msgid "Other receives:"
+msgstr "Die andere Person erhält:"
 
-#: templates/svo/Play.html:507
-msgid "'You'"
-msgstr "'Sie erhalten'"
+#: templates/svo/Play.html:523
+#| msgid "'You'"
+msgid "You"
+msgstr "Sie"
 
-#: templates/svo/Play.html:508
-msgid "'Other person'"
-msgstr "'Andere erhalten'"
+#: templates/svo/Play.html:524
+#| msgid "'Other person'"
+msgid "Other person"
+msgstr "Die andere Person"
 
 #: templates/svo/Results.html:6
-msgid "Social Value orientation results"
-msgstr ""
-
-#: templates/svo/Results.html:11
-msgid "You answered the"
-msgstr ""
-
-#: templates/svo/Results.html:11
-msgid "questions"
-msgstr ""
+msgid "Social Value Orientation Results"
+msgstr "Ergebnisse soziale Werteorientierung"
 
 #: templates/svo/Results.html:12
-msgid "Your profit is therefore"
-msgstr ""
+msgid "You answered the FULL questions."
+msgstr "Sie haben ALLE Fragen beantwortet."
 
-#: templates/svo/Results.html:13
+#: templates/svo/Results.html:16
+msgid "You answered the PRIMARY questions."
+msgstr "Sie haben die ERSTEN Fragen beantwortet."
+
+#: templates/svo/Results.html:24
+msgid "You were randomly selected as the Sender."
+msgstr "Sie wurden zufällig als Sender ausgewählt."
+
+#: templates/svo/Results.html:28 templates/svo/Results.html:37
+#: templates/svo/Results.html:51
+#, python-format
+msgid "Slider %(slider_num)s was selected for payment."
+msgstr "Slider %(slider_num)s wurde für die Zahlung ausgewählt."
+
+#: templates/svo/Results.html:33
+msgid "You were randomly selected as the Receiver."
+msgstr "Sie wurden zufällig als Empfänger ausgewählt."
+
+#: templates/svo/Results.html:56
+#, python-format
+msgid "As a Receiver, you received %(received)s."
+msgstr "Als Empfänger haben Sie %(received)s erhalten."
+
+#: templates/svo/Results.html:61
+#, python-format
+msgid "As a Sender, you kept %(kept)s."
+msgstr "Als Sender haben Sie %(kept)s behalten."
+
+#: templates/svo/Results.html:69
+msgid "Your profit is therefore:"
+msgstr "Ihr Verdienst ist deshalb:"
+
+#: templates/svo/Results.html:73
 msgid "Your social value orientation angle is"
-msgstr ""
+msgstr "Ihr Winkel der sozialen Werteorientierung beträgt"
 
-#: templates/svo/Results.html:14
-msgid "Therefore your svo type is"
-msgstr ""
+#: templates/svo/Results.html:74
+msgid "Your svo_de_ring_full_sum type is"
+msgstr "Ihr SVO Typ ist"
+
+#: templates/svo/Results.html:75
+msgid "Your inequality aversion score is"
+msgstr "Ihr Wert der Ungleichheitsaversion beträgt"
