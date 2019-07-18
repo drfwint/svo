@@ -1,5 +1,5 @@
 
-# A flexible z-Tree and oTree implementation of the Social Value Orientation Slider Measure 
+# A flexible z-Tree and oTree implementation of the Social Value Orientation Slider Measure
 
 ### Authors
 **Paolo Crosetto**,
@@ -34,7 +34,7 @@ accessed via our github repository at <https://github.com/drfwint/svo>.
 
 ### Citation
 
-``` 
+```
 Paolo Crosetto, Ori Weisel, Fabian Winter (2019) A flexible z-Tree and oTree Implementation of the Social Value Orientation Slider Measure, Journal of Behavioral and Experimental Finance, Volume 23, Pages 46-53,
 
 ```
@@ -56,7 +56,7 @@ and subsets of items. Table
 reference="tab:parameters"} gives an overview of the important
 parameters of the implementation.
 
-`Matching` 
+`Matching`
 ----------
 
 A major addition to the original publication is that we add a
@@ -132,11 +132,12 @@ choices which are in between the discrete values on the scale). Note
 that while such interior decisions are possible in principle, they are
 very rarely used in practice.[^1]
 
-![Screenshot of the z-Tree decision
-screen](screenshot_ztree.png){width=".9\\textwidth"}
+![Screenshot of the z-Tree decision](https://github.com/drfwint/svo/blob/master/blob/master/screenshot_ztree.png)
 
-[\[fig:ztree\_screenshot\]]
-label="fig:ztree_screenshot"}
+
+
+
+
 
 Parameters are set in PARAMETERS
 --------------------------------
@@ -151,10 +152,10 @@ program "////INSERT PARAMETERS HERE ////" (see Figure
 change the respective values described below.
 
 ![Screenshot of the program indicating where to change setup
-parameters[]{label="screenshot"}](screenshot_program.png "fig:")
-width=".7\\textwidth"}\
+parameters](https://github.com/drfwint/svo/blob/master/blob/master/screenshot_program.png)
 
-### `language`  
+
+### `language`
 
 Sets the language in which the SVOSM is displayed to the decision maker.
 Implemented languages are English, French, German, and Italian. To add
@@ -162,20 +163,20 @@ additional languages, first declare the new language in the program
 INTERNAL CONSTANTS, add the translations to all items, and finally
 choose the language in the program PARAMETERS.
 
-### `select_items` 
+### `select_items`
 
 Allows you to choose whether only the six primary items or all fifteen
 items (six primary and nine secondary) are displayed. Using only the
 secondary items is not possible.
 
-### `items_in_random_order` 
+### `items_in_random_order`
 
 Determines whether items are displayed in the order presented in the
 paper-based SVOSM as in @murphy2011measuring, or in random order. If the
 `RANDOM` option is chosen, the order is randomized separately for each
 subject.
 
-### `matching` 
+### `matching`
 
 Determines the matching procedure: `RING` or `RANDOM_DICTATOR` (see
 subsection [1.1]
@@ -184,7 +185,7 @@ reference="subsec:matching"} and Figure
 matching works with any number of subjects greater than 1.
 `RANDOM_DICTATOR` matching works with any even number of subjects.
 
-### `scale` 
+### `scale`
 
 The scale of the circle underlying the SVOSM can be changed. The default
 is `scale = 1`, which results in a circle with a diameter of 100
@@ -195,7 +196,7 @@ centered at (100,100)); inputs smaller than 1 scale the circle down
 (25,25)). Scaling may be useful if you want to present the decisions in
 real monetary values and cannot afford to pay 100 €/\$/CHF/$\dots$
 
-### `precision` 
+### `precision`
 
 Determines the precision of the displayed values. This option is limited
 to two modes---integers and two decimal digits---because z-Tree does not
@@ -205,12 +206,12 @@ diameter of 100. For a circle with a small diameter, two decimals after
 the point may be more appropriate (choose option
 `TWO_DIGITS_AFTER_POINT`).
 
-### `debug` 
+### `debug`
 
 Displays debugging information, including a kill-button. Useful for
 testing the treatment.
 
-Output 
+Output
 ------
 
 The z-Tree treatment writes all the relevant output in the
@@ -224,7 +225,7 @@ under specific parameters, e.g. `avg_dist_to_equality` is calculated
 only if the secondary items are used. The rightmost column of table
 [\[tab:output\]] indicates if and when the variables are used.
 
-### `Profit` 
+### `Profit`
 
 The `Profit`-variable is built-in in z-Tree, and is automatically
 written to the `TotalProfit`-variable in the session table. Thus, you
@@ -238,14 +239,14 @@ chosen to be a sender, `Profit` returns the amount kept, and if she was
 chosen to be a receiver, it returns the amount sent to her by the
 sender.
 
-### `svo_angle` 
+### `svo_angle`
 
 The `svo_angle` is the core measure of the SVOSM. The `svo_angle` is
 stored in the subjects table *and* in the session table. Storing values
 in the session table is useful if some of the SVOSM information is
 required in other treatments later in the session.
 
-### `svo_type` 
+### `svo_type`
 
 `svo_type` assigns SVO types to specific value ranges of the
 `svo_angle`. The following values are used: 1 = Altruist, 2 = Prosocial,
@@ -253,7 +254,7 @@ required in other treatments later in the session.
 taken from @murphy2011measuring. `svo_type` is stored in the subjects
 table *and* in the session table.
 
-### `inequality_aversion_score` 
+### `inequality_aversion_score`
 
 The `inequality_aversion_score` is calculated from the secondary items
 and is computed only if they are used. It is calculated only if the
@@ -284,7 +285,7 @@ to temporarily store information in the client's browser and issues a
 notification the first time the page is opened.
 
 ![Screenshot of the oTree decision
-screen](slider_moved.png){width=".9\\textwidth"}
+screen](![Alternate image text](https://github.com/drfwint/svo/blob/master/blob/master/slider_moved.png)
 
 [\[fig:otree\_screenshot\]]
 label="fig:otree_screenshot"}
@@ -302,7 +303,7 @@ In most cases the options available to the user are the same in the
 oTree implementation as in the z-Tree one. In these cases we refer to
 the relevant sections above. Other cases are discussed below.
 
-### `LANGUAGE_CODE` 
+### `LANGUAGE_CODE`
 
 Sets the language in which the SVOSM is displayed to the decision maker.
 Implemented languages are English, German, Italian, and French. Set
@@ -311,27 +312,27 @@ the oTree documentation on localization to learn how to add further
 languages. `LANGUAGE_CODE` also sets the language for the cookie
 warning.
 
-### `select_items`  
+### `select_items`
 
 See section [2.1.2].
 
-### `items_in_random_order` 
+### `items_in_random_order`
 
 See section [2.1.3].
 
-### `matching` 
+### `matching`
 
 See section [2.1.4].
 
-### `scale` 
+### `scale`
 
 See section [2.1.5].
 
-### `precision` 
+### `precision`
 
 See section [2.1.6].
 
-Output 
+Output
 ------
 
 All relevant output, including the SVO-angle etc, can be downloaded in
@@ -355,15 +356,15 @@ chosen to be a sender, `payoff` returns the amount kept, and if she was
 chosen to be a receiver, it returns the amount sent to her by the
 sender.
 
-### `svo_angle` 
+### `svo_angle`
 
 See section [2.2.2].
 
-### `svo_type` 
+### `svo_type`
 
 See section [2.2.3].
 
-### `inequality_aversion_score` 
+### `inequality_aversion_score`
 
 See section [2.2.4].
 
@@ -388,10 +389,10 @@ SVOSM, please cite the SVOSM as @murphy2011measuring and make sure to
 follow the license agreements associated with z-Tree or oTree (in
 particular to cite @fischbacher2007z, or @chen2016otree, respectively).
 
-References 
+References
 ==========
 
-Appendix 
+Appendix
 ========
 
 
@@ -417,8 +418,8 @@ Appendix
 
 
 
-  ### Relevant Variables in the Subjects Table    
-                     
+  ### Relevant Variables in the Subjects Table
+
   | Relevant Variables in the Subjects Table  | Description |Relevant for Parameters
   | ----    | ----    | ----    |
  | `Subject`                     |unique identifier for the Subject               | always
@@ -431,11 +432,11 @@ Appendix
  | `mean_to_self`                |mean allocation to self in primary items        | always
  | `mean_to_other`               |mean allocation to other in primary items       | always
  | `svo_angle`    |svo angle calculated as $$\arctan\left(\frac{\texttt{mean\_to\_other} - 50*\texttt{scale}}{\texttt{\texttt{mean\_to\_self}} - 50*\texttt{scale}}\right)$$               |always
- | `svo_type`    | svo type,          |always| 
-||                 1 = Altruist $\Leftrightarrow$ `svo_angle` $>57.15$,            
-||                 2 = Prosocial $\Leftrightarrow$ $57.15 \geq$ `svo_angle` $>22.45$,            | 
-||                 3 = Individualist $\Leftrightarrow$ $22.45 \geq$ `svo_angle` $>-12.04$,       | 
-||                 4 = Competitive $\Leftrightarrow$ `svo_angle` $\geq-12.04$                    |  
+ | `svo_type`    | svo type,          |always|
+||                 1 = Altruist $\Leftrightarrow$ `svo_angle` $>57.15$,
+||                 2 = Prosocial $\Leftrightarrow$ $57.15 \geq$ `svo_angle` $>22.45$,            |
+||                 3 = Individualist $\Leftrightarrow$ $22.45 \geq$ `svo_angle` $>-12.04$,       |
+||                 4 = Competitive $\Leftrightarrow$ `svo_angle` $\geq-12.04$                    |
  | `avg_dist_to_equality`        |average standardized distance of the choice to the choice which would maximize equality       |`select_items = FULL`|
  | `avg_dist_to_altruist`        |average standardized distance of the choice to the choice which would maximize altruism       |`select_items = FULL`|
  | `avg_dist_to_joint`           |average standardized distance of the choice to the choice which would maximize joint earnings                |`select_items = FULL`
@@ -465,7 +466,7 @@ Appendix
  | `matching`              | `RING`      | Subject A,B,C,D are ordered on a ring-structure as in Murphy et al. (2011). In this case, A gives to B, B gives to C, C gives to D and D gives to A, which makes everyone a sender AND a receiver.
 |                          |`RANDOM_DICTATOR` | Subjects A,B,C,D are matched in groups of 2 (say (A; B) and (C;D). One member of each group (say A and C) is selected to be the sender, the other one as receiver. In this case, B receives from A and D receives from C.
  | `precision`             | `TWO_DIGITS_AFTER_POINT` | values on sliders are rounded to two digits after decimal point
-|                          | `INTEGERS`                | values on sliders are rounded to 
+|                          | `INTEGERS`                | values on sliders are rounded to
 | `scale`                  |  $(0, +\infty]$           |Parameter to scale up $(>1$) or down $(<1)$ all the numbers on a slider. Default is 1, resulting in a circle of diameter 100
  | `random_payoff`         | `RAND`     | the payoff will be calculated as a random choice
 |                          |  `SUM`     |  the payoff is the sum of all choices of the player
@@ -485,10 +486,10 @@ Appendix
   |`mean_to_other`             | mean allocation to other in primary items        | always
   |`svo_angle`                 | svo angle calculated as $$\arctan\left(\frac{\texttt{mean\_to\_other} - 50*\texttt{scale}}{\texttt{\texttt{mean\_to\_self}}  - 50*\texttt{scale}}\right)$$                 |always
   |`svo_type`                  |svo type,          | always
-||                            1 = Altruist $\Leftrightarrow$ `svo_angle` $>57.15$,             
-||                            2 = Prosocial $\Leftrightarrow$ $57.15 \geq$ `svo_angle` $>22.45$,              
-||                            3 = Individualist $\Leftrightarrow$ $22.45 \geq$ `svo_angle` $>-12.04$,         
-||                            4 = Competitive $\Leftrightarrow$ `svo_angle` $\geq-12.04$                      
+||                            1 = Altruist $\Leftrightarrow$ `svo_angle` $>57.15$,
+||                            2 = Prosocial $\Leftrightarrow$ $57.15 \geq$ `svo_angle` $>22.45$,
+||                            3 = Individualist $\Leftrightarrow$ $22.45 \geq$ `svo_angle` $>-12.04$,
+||                            4 = Competitive $\Leftrightarrow$ `svo_angle` $\geq-12.04$
   |`avg_dist_to_equality`      | average standardized distance of the choice to the choice which would maximize equality        |`select_items = FULL`
   |`avg_dist_to_altruist`      | average standardized distance of the choice to the choice which would maximize altruism        |`select_items = FULL`
   |`avg_dist_to_joint`         | average standardized distance of the choice to the choice which would maximize joint earnings                | `select_items = FULL`
@@ -499,11 +500,10 @@ Appendix
   |`slider_as_receiver`        | slider selected for payment as receiver          | `always`
   |`kept_of_sender`            | amount kept by the sender          `always`
   |`received_from_sender`      | amount received from the sender                  |`always`
-  
+
 
 [^1]: Personal communication with R. Murphy.
 
 [^2]: This version app was implemented in oTree version 2.1.9. Please
     update the app according to the documentation if a new version of
     oTree is released.
-
