@@ -87,7 +87,7 @@ decision making may be perceived as \"colder\", and thus may lead to
 more strategic [@brandts2000hot] or normative choices
 [@rauhut2010sociological].
 
-![Matching protocols[]{label="matching"}](matching "fig:")
+![Matching protocols[]{label="matching"}](blob/master/matching.png)
 width=".7\\textwidth"}\
 
 `Main measures`
@@ -132,7 +132,7 @@ choices which are in between the discrete values on the scale). Note
 that while such interior decisions are possible in principle, they are
 very rarely used in practice.[^1]
 
-![Screenshot of the z-Tree decision](https://github.com/drfwint/svo/blob/master/blob/master/screenshot_ztree.png)
+![Screenshot of the z-Tree decision](https://github.com/drfwint/svo/blob/master/blob/master/fig4.png)
 
 
 
