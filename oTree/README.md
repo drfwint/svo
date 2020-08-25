@@ -23,5 +23,4 @@ otree runserver 0.0.0.0:3000
 
 
 #### Requirement
-* otree-core==1.3.7
-* Django==1.8.8
+* otree>3.0.0

@@ -9,7 +9,7 @@ from django.conf import settings
 
 
 class Play(Page):
-	form_model = models.Player
+	form_model = 'player'
 	form_fields = [
 		'input_self_1','input_other_1',
 		'input_self_2','input_other_2',

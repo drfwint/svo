@@ -121,3 +121,5 @@ dmypy.json
 .pyre/
 
 
+
+__temp*

@@ -1,2 +1,2 @@
 #some functions do not work in oTree 3.x Will be changed soon.
-otree<3.0.0
+otree>3.0.0
