@@ -70,14 +70,14 @@ class Constants(BaseConstants):
 # Defining what configs to be saved
 class Subsession(BaseSubsession):
     players_per_group = models.IntegerField()
-    language = models.CharField(choices=['EN', 'DE', 'IT', 'FR'])   # English, Deutsch, Italian
-    select_items = models.CharField(choices=['PRIMARY', 'FULL'])
+    language = models.StringField(choices=['EN', 'DE', 'IT', 'FR'])   # English, Deutsch, Italian
+    select_items = models.StringField(choices=['PRIMARY', 'FULL'])
     items_in_random_order = models.BooleanField()
     scale = models.FloatField()
-    precision = models.CharField(choices=['INTEGERS', 'TWO_DIGITS_AFTER_POINT'])
-    matching = models.CharField(choices=['RING', 'RANDOM_DICTATOR'])
-    random_payoff = models.CharField(choices=['RAND', 'SUM'])
-    slider_init = models.CharField(choices=['LEFT', 'RIGHT', 'RAND', 'AVG'])
+    precision = models.StringField(choices=['INTEGERS', 'TWO_DIGITS_AFTER_POINT'])
+    matching = models.StringField(choices=['RING', 'RANDOM_DICTATOR'])
+    random_payoff = models.StringField(choices=['RAND', 'SUM'])
+    slider_init = models.StringField(choices=['LEFT', 'RIGHT', 'RAND', 'AVG'])
 
 
     def creating_session(self):
@@ -99,10 +99,8 @@ class Subsession(BaseSubsession):
         for i in range(0, len(players), ppg):
             group_matrix.append(players[i:i + ppg])
         self.set_group_matrix(group_matrix)
-
-
-    # Runs at initialization time and saves the configs in the database
-    def before_session_starts(self):
+        
+        # Runs at initialization time and saves the configs in the database
         self.players_per_group = Constants.players_per_group
         self.language = self.session.config['language'].lower()
         # self.select_items = Constants.select_items
@@ -136,8 +134,7 @@ class Subsession(BaseSubsession):
 
         self.set_item_orders(item_order)
 
-
-		# Sets the order of items that is going to be shown to each player
+	# Sets the order of items that is going to be shown to each player
     # it can be random for each player or the fixed order according to the paper
     def set_item_orders(self, item_order):
         players = self.get_players()
@@ -698,7 +695,7 @@ class Player(BasePlayer):
 
     svo_angle = models.DecimalField(max_digits=10, decimal_places=5)
     alpha = models.DecimalField(max_digits=10, decimal_places=5)
-    svo_type = models.CharField(choices=['Altruist', 'Prosocial', 'Individualist', 'Competitive'])
+    svo_type = models.StringField(choices=['Altruist', 'Prosocial', 'Individualist', 'Competitive'])
     inequality_aversion_score = models.DecimalField(max_digits=7, decimal_places=2)
 
     # slider selected for payment as sender

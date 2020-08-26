@@ -504,6 +504,6 @@ Appendix
 
 [^1]: Personal communication with R. Murphy.
 
-[^2]: This version app was implemented in oTree version 2.1.9. Please
+[^2]: This version app was implemented in oTree version 3.0.6. Please
     update the app according to the documentation if a new version of
     oTree is released.
